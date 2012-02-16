@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery.tmpl.js"></script-->
+		<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+		<script type="text/javascript" src="js/knockout-2.0.0rc.js"></script>
+	</head>
+	<body>
+		<h5>pre-flop</h5>
+		<span>card0: <input data-bind="value: card0"/></span>
+		<span>card1: <input data-bind="value: card1"/></span>
+		<h5>flop</h5>
+		<span>card2: <input data-bind="value: card2"/></span>
+		<span>card3: <input data-bind="value: card3"/></span>
+		<span>card4: <input data-bind="value: card4"/></span>
+		<h5> turn </h5>
+		<span>card5: <input data-bind="value: card5"/></span>
+		<h5>river</h5>
+		<span>card6: <input data-bind="value: card6"/></span>
+		<h5>control</h5>
+		<p>
+		<a href="#" data-bind="click: monteCarloSimulation">get_odds_monte</a>
+		</p>
+		<p>
+		<a href="#" data-bind="click: Exhaustive">get_odds_exhaustive</a>
+		</p>
+		<a href="#" data-bind="click: getHandValue">get_handvalue</a>
+		</p>
+		<span>playersNumber: <input data-bind="value: playersNumber"/></span>
+		<span>phase from 0(pre-flop), 1(flop), 2(turn), 3(river): <input data-bind="value: phase"/></span>
+
+		<script type="text/javascript" src="js_core/core.js"></script>
+
+
+
+		<table style="text-align:right; margin-left:4em; border: 1px dashed #2f6fab; background-color: #f9f9f9;">
+
+<tr>
+<td>2♣
+</td>
+<td style="color:red">2♦
+</td>
+<td style="color:red">2♥
+</td>
+<td>2♠
+</td>
+<td>3♣
+</td>
+<td style="color:red">3♦
+</td>
+<td style="color:red">3♥
+</td>
+<td>3♠
+</td>
+<td>4♣
+</td>
+<td style="color:red">4♦
+</td>
+<td style="color:red">4♥
+</td>
+<td>4♠
+</td>
+<td>5♣
+</td>
+<td style="color:red">5♦
+</td>
+<td style="color:red">5♥
+</td>
+<td>5♠
+</td>
+<td>6♣
+</td>
+<td style="color:red">6♦
+</td>
+<td style="color:red">6♥
+</td>
+<td>6♠
+</td>
+<td>7♣
+</td>
+<td style="color:red">7♦
+</td>
+<td style="color:red">7♥
+</td>
+<td>7♠
+</td>
+<td>8♣
+</td>
+<td style="color:red">8♦
+</td></tr>
+<tr>
+<td>0
+</td>
+<td>1
+</td>
+<td>2
+</td>
+<td>3
+</td>
+<td>4
+</td>
+<td>5
+</td>
+<td>6
+</td>
+<td>7
+</td>
+<td>8
+</td>
+<td>9
+</td>
+<td>10
+</td>
+<td>11
+</td>
+<td>12
+</td>
+<td>13
+</td>
+<td>14
+</td>
+<td>15
+</td>
+<td>16
+</td>
+<td>17
+</td>
+<td>18
+</td>
+<td>19
+</td>
+<td>20
+</td>
+<td>21
+</td>
+<td>22
+</td>
+<td>23
+</td>
+<td>24
+</td>
+<td>25
+</td></tr>
+<tr>
+<td style="height:1em;">
+</td></tr>
+<tr>
+<td style="color:red">8♥
+</td>
+<td>8♠
+</td>
+<td>9♣
+</td>
+<td style="color:red">9♦
+</td>
+<td style="color:red">9♥
+</td>
+<td>9♠
+</td>
+<td>T♣
+</td>
+<td style="color:red">T♦
+</td>
+<td style="color:red">T♥
+</td>
+<td>T♠
+</td>
+<td>J♣
+</td>
+<td style="color:red">J♦
+</td>
+<td style="color:red">J♥
+</td>
+<td>J♠
+</td>
+<td>Q♣
+</td>
+<td style="color:red">Q♦
+</td>
+<td style="color:red">Q♥
+</td>
+<td>Q♠
+</td>
+<td>K♣
+</td>
+<td style="color:red">K♦
+</td>
+<td style="color:red">K♥
+</td>
+<td>K♠
+</td>
+<td>A♣
+</td>
+<td style="color:red">A♦
+</td>
+<td style="color:red">A♥
+</td>
+<td>A♠
+</td></tr>
+<tr>
+<td>26
+</td>
+<td>27
+</td>
+<td>28
+</td>
+<td>29
+</td>
+<td>30
+</td>
+<td>31
+</td>
+<td>32
+</td>
+<td>33
+</td>
+<td>34
+</td>
+<td>35
+</td>
+<td>36
+</td>
+<td>37
+</td>
+<td>38
+</td>
+<td>39
+</td>
+<td>40
+</td>
+<td>41
+</td>
+<td>42
+</td>
+<td>43
+</td>
+<td>44
+</td>
+<td>45
+</td>
+<td>46
+</td>
+<td>47
+</td>
+<td>48
+</td>
+<td>49
+</td>
+<td>50
+</td>
+<td>51
+</td></tr></table>
+	</body>
+</html>
