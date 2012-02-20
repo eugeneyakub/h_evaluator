@@ -717,7 +717,7 @@ int main(int argc, char *argv[])
                                                      10,                                  //общее число игроков ( я + число оппонентов)
                                                      40000                             //число итераций в монтекарло
                                                      );
-    printf("\n\n chance to collect specific hand: \n");
+    printf("\n\n chance to collect specific hand; can be not victorious: \n");
     for (int i = 0; i < 9 ; i++)
         printf("probabilty %f of %i \n", rgh.getOdds[i], i);
 
