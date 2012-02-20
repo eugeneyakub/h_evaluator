@@ -302,8 +302,7 @@ partOfRandomHand makeRandomHand(
         
         for(;;){
             generatedNumber = getRandomInt(0, 51);  
-            if (generatedNumber == -1 )
-                printf("dd");
+
             exist = false;         
             //банним карты уже на руках игроков
             if (l >0)
@@ -481,6 +480,136 @@ resultGame monteCarloSimulation(int cards[], int l, int ph, int playerCount, int
   return _resultGame;
 }
 
+//-------------------------------------------------------------------------------------------------------
+/*
+    результат работы:
+    getOdds               -- вероятность получения конкретной комбинации (флаш, кольцо)
+    handType              -- сама комбинация
+*/
+typedef struct resultGetHand{
+    float   getOdds[9];
+    int     handType;
+} resultGetHand;
+
+resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration){
+    resultGetHand _resultGetHand;
+    for (int i = 0; i < 9 ; i++)
+        _resultGetHand.getOdds[i] = 0;
+
+    int oppCount = playerCount - 1;//число оппонентов
+    //рука игрока
+    int p1[2] = {cards[0], cards[1]};
+    int alreadyBoardCount = 0;
+    int boardCount = 0;
+    //нет карт на столе (префлоп)
+    int alreadyboard[5] = {-1, -1, -1, -1, -1};
+
+    if (ph == 0){//префлоп
+      alreadyBoardCount = 0; //число карт на столе (известны)
+      boardCount = 5;        //число карт, которые будем генерировать случайным образом
+    }
+    else if (ph == 1){//флоп
+      alreadyBoardCount = 3;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      boardCount = 2;
+    }
+    else if (ph == 2){//тёрн
+      alreadyBoardCount = 4;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      boardCount = 1;
+    }
+    else if (ph == 3){//ривер
+      alreadyBoardCount = 5;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      alreadyboard[4] = cards[6];
+      boardCount = 0;
+    }
+    int globalCount = 0;
+    int handCount = 0;
+
+    for(int i = 0; i < monteCarloMaxIteration; i++ ){
+        //если изменим на отличное от -1, то карта уже сгенерирована, значит банним её
+        int bannedArray[52] = {};
+        for (int j = 0; j < 52; j++)
+            bannedArray[j] = -1;
+        //банним руку игрока
+        bannedArray[cards[0]]++;
+        bannedArray[cards[1]]++;
+        //банним карты уже на столе (флоп/тёрн/ривер)
+        if (alreadyBoardCount != 0)
+            for (int j = 0; j < alreadyBoardCount; j++)
+                bannedArray[alreadyboard[j]]++;
+        handEvalResult p1_eval;
+        //int p1_eval = -1; //качество руки игрока (7 карт: 2 его + 3-5 стол + 2-0 сгенерированных)
+        partOfRandomHand board;
+        board.count = -1;
+
+
+
+
+        //банним карты, сгенерированные рандомно на столе
+        if (board.count > 0)
+            for (int j = 0; j < board.count; j++)
+                  bannedArray[board.cards[j]]++;
+        //генерим рандомно карты противников без забанненых
+        int v = 0; //число побед против оппонентов
+        int e = 0; //число нечейных
+        for (int  j = 0; j < oppCount; j++){
+              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
+              //банним их
+              if (p2.count > 0)
+              for (int j = 0; j < p2.count; j++)
+                  bannedArray[p2.cards[j]]++;
+        }
+
+        if (ph == 0){ //префлоп
+            board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
+            int arr[7] = {p1[0], p1[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 1){ //флоп
+            board = makeRandomHand(bannedArray, 52,  2);
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 2){ //тёрн
+            board = makeRandomHand(bannedArray, 52,  1);
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 3){ //ривер
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+
+        _resultGetHand.getOdds[p1_eval.handType]++;
+
+        globalCount++;
+    };
+
+    printf("hand %i \n", handCount);
+    printf("global %i \n", globalCount);
+
+    for (int i = 0; i < 9; i++)
+        _resultGetHand.getOdds[i] /= (1.0 * globalCount);
+
+
+    return _resultGetHand;
+}
+
+
 
 //-------------------------------------------------------------------------------------------------------
 
@@ -566,4 +695,31 @@ int main(int argc, char *argv[])
     //int l = sizeof(cards) / sizeof(int); //размер массива
     //int h_e = handEval(cards, l);
     //printf("%d\n",h_e);
+
+    /*
+      тип руки:  handType
+      straight  flush           8
+      quad                      7
+      full house                6
+      flush                     5
+      straight (по возрастанию) 4
+      trip                      3
+      2 pairs                   2
+      pair                      1
+      high cards                0
+      */
+
+
+    int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
+    resultGetHand rgh = monteCarloSimulation_getHand(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
+                                                     7,                                  //7 штук
+                                                     1,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
+                                                     10,                                  //общее число игроков ( я + число оппонентов)
+                                                     40000                             //число итераций в монтекарло
+                                                     );
+    printf("\n\n chance to collect specific hand: \n");
+    for (int i = 0; i < 9 ; i++)
+        printf("probabilty %f of %i \n", rgh.getOdds[i], i);
+
+
 }
