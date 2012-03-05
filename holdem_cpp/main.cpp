@@ -90,6 +90,7 @@ int completeHandValue(int& handValue, int cards[], int l){
 
     handValue       --  значение руки .
     handType        --  тип руки
+    win_cards       --  содержит ранги карт, привёдших к победе
   */
 typedef struct handEvalResult{
     int handValue;
@@ -564,7 +565,6 @@ resultGame monteCarloSimulation(int cards[], int l, int ph, int playerCount, int
 */
 typedef struct resultGetHand{
     float   getOdds[9];
-    int     handType;
 } resultGetHand;
 
 resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration){
@@ -609,7 +609,6 @@ resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playe
       boardCount = 0;
     }
     int globalCount = 0;
-    int handCount = 0;
 
     for(int i = 0; i < monteCarloMaxIteration; i++ ){
         //если изменим на отличное от -1, то карта уже сгенерирована, значит банним её
@@ -743,8 +742,8 @@ typedef struct winnerData{
     int number;                 //номер победителя
     int handValue;              //значение его руки
     int handType;
-    int _cards[7];
-    int _count;
+    int _cards[7];              //карты, приведшие к победе
+    int _count;                 //их число (остальные: -1)
 } winnerData;
 
 //определяет победителя среди множества рук
@@ -857,9 +856,6 @@ int main(int argc, char *argv[])
         printf("win card: %i \n", _winnerData._cards[k]);
     };
     
-    //int l = sizeof(cards) / sizeof(int); //размер массива
-    //int h_e = handEval(cards, l);
-    //printf("%d\n",h_e);
 
     /*
       тип руки:  handType
@@ -874,7 +870,6 @@ int main(int argc, char *argv[])
       high cards                0
       */
 
-
     int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
     resultGetHand rgh = monteCarloSimulation_getHand(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
                                                      7,                                  //7 штук
@@ -885,6 +880,14 @@ int main(int argc, char *argv[])
     printf("\n\n chance to collect specific hand; can be not victorious: \n");
     for (int i = 0; i < 9 ; i++)
         printf("probabilty %f of %i \n", rgh.getOdds[i], i);
+
+
+
+
+
+    //int l = sizeof(cards) / sizeof(int); //размер массива
+    //int h_e = handEval(cards, l);
+    //printf("%d\n",h_e);
 
 
 }
