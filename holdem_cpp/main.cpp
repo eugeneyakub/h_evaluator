@@ -752,7 +752,7 @@ winnerData findWinner(int cards[][7], int playerCount, int cardCount){
     int winnerNumber    = -1;
     int winnerHandValue = -1;
     int winnerHandType  = -1;
-    int win_cards[7] = {-1, -1, -1, -1, -1, -1, -1};
+    int win_cards_rank[7] = {-1, -1, -1, -1, -1, -1, -1};
 
     for (int i = 0; i < playerCount; i++){
         handEvalResult hand_eval = handEval(cards[i], cardCount);
@@ -765,7 +765,7 @@ winnerData findWinner(int cards[][7], int playerCount, int cardCount){
             winnerNumber    = i;
             for (int k = 0; k < 7; k++){
                 //printf("wincards %i \n", hand_eval.win_cards[k]);
-                win_cards[k] = hand_eval.win_cards[k];
+                win_cards_rank[k] = hand_eval.win_cards[k];
             };
         }
     }
@@ -774,14 +774,14 @@ winnerData findWinner(int cards[][7], int playerCount, int cardCount){
     int _count = 0;
 
     //получим ранги без -1 и повторений
-    quick_sort(win_cards, 0, 7);
-    int n = unique(win_cards, 7);
-    n = remove_minusOne(win_cards, n);
+    quick_sort(win_cards_rank, 0, 7);
+    int n = unique(win_cards_rank, 7);
+    n = remove_minusOne(win_cards_rank, n);
     //найдем карты для рангов
     for(int k = 0; k < 7; k++){
         int card_rank = cards[winnerNumber][k] >> 2;
         for(int j = 0; j < n; j++)
-            if (card_rank == win_cards[j]){
+            if (card_rank == win_cards_rank[j]){
                 _cards[_count] = cards[winnerNumber][k];
                 _count++;
             };
