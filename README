@@ -4,3 +4,6 @@ Poker TH    - для проверки вероятности собрать оп
 ~/Documents/h_evaluator/holdem_apple$ gcc `gnustep-config --objc-flags` -std=c99 -lgnustep-base -lobjc ./holdem/holdem.m  invoke.m -o invoke
 ~/Documents/h_evaluator/holdem_apple$ ./invoke
 
+
+!!!!!!!!!!!!!!  в смартофоне вместо srand и rand arc4random 
+
