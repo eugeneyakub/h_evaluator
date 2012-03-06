@@ -1,0 +1,34 @@
+{
+    COMPILEROPTIONS = "";
+    CPPOPTIONS = "";
+    CREATION_DATE = "2012-03-06 14:09:49 +0600";
+    INSTALLDIR = "$(HOME)/GNUstep";
+    LANGUAGE = English;
+    LINKEROPTIONS = "";
+    MAKEFILEDIR = "$(GNUSTEP_MAKEFILES)";
+    OBJC_COMPILEROPTIONS = "";
+    PROJECT_AUTHORS = (
+    );
+    PROJECT_COPYRIGHT = "Copyright (C) 200x";
+    PROJECT_COPYRIGHT_DESC = "Released under ...";
+    PROJECT_CREATOR = "eugene,,,";
+    PROJECT_DESCRIPTION = "No description avaliable!";
+    PROJECT_GROUP = "No group available!";
+    PROJECT_MAINTAINER = "eugene,,,";
+    PROJECT_NAME = download.gif;
+    PROJECT_RELEASE = 0.1;
+    PROJECT_SUMMARY = "No summary available!";
+    PROJECT_TYPE = Aggregate;
+    PROJECT_URL = "";
+    SEARCH_HEADER_DIRS = (
+    );
+    SEARCH_LIB_DIRS = (
+    );
+    SUBPROJECTS = (
+    );
+    SUPPORTING_FILES = (
+	GNUmakefile.preamble,
+	GNUmakefile,
+	GNUmakefile.postamble
+    );
+}

@@ -1,17 +1,26 @@
+ 
+//#include <stdio.h>
+
+/* 
+ * The next #include line is generally present in all Objective-C
+ * source files that use GNUstep.  The Foundation.h header file
+ * includes all the other standard header files you need.
+ */
+//#include <Foundation/Foundation.h>  
+
 /* 
  * File:   main.cpp
  * Author: eugene
  *
  * Created on January 30, 2012, 2:59 PM
  */
-#include <QtCore/QCoreApplication>
 
-#include <cstdlib>
 
-using namespace std;
 
-#include <stdio.h>
-#include <time.h>
+
+//#include <stdio.h>
+//#include <time.h>
+#import "holdem.h"
 
 //-----Для C. Вспомогательный служебные функции.--------------------------------------------------------------
 
@@ -57,7 +66,7 @@ int normalize_length(int arr[], int l){
 чем больше число, тем лучше рука)
 */
 
-int completeHandValue(int& handValue, int cards[], int l){  
+int completeHandValue(int  handValue, int cards[], int l){  
     //убираем все -1
     l = normalize_length(cards, l);
     if (l == -1)
@@ -115,7 +124,7 @@ handEvalResult handEval(int cardArr[], int l){
     int isPresent[52] = {}; // isPresent[card] is true iff card is one
                          // of the 7 in the hand
     for (int i = 0; i < 52; i++){
-        isPresent[i] = false;
+        isPresent[i] = 0;
     }
     int card;
     int rank;
@@ -127,7 +136,7 @@ handEvalResult handEval(int cardArr[], int l){
           //return -1;
             return _handEvalResult;
         }
-        isPresent[card] = true;
+        isPresent[card] = 1;
         rank = card >> 2;
         rankCounts[rank]++;
         suit = card & 3;
@@ -174,14 +183,14 @@ handEvalResult handEval(int cardArr[], int l){
         for (int j = 0; j < l; j++){
             _handEvalResult.win_cards[j] = run[j];
         };
-        completeHandValue(handValue, run, l);
+        handValue = completeHandValue(handValue, run, l);
       } else {
         handValue = 5; // flush
         handType = 5;
         for (int j = 0; j < l; j++){
             _handEvalResult.win_cards[j] = ranksInFlushSuit[j];
         };
-        completeHandValue(handValue, ranksInFlushSuit, l);
+        handValue = completeHandValue(handValue, ranksInFlushSuit, l);
       }
 
 
@@ -236,7 +245,7 @@ handEvalResult handEval(int cardArr[], int l){
         for (int j = 0; j < 7; j++){
             _handEvalResult.win_cards[j] = pattern[4][j];
         };
-        completeHandValue(handValue, pattern[4], 7);
+        handValue = completeHandValue(handValue, pattern[4], 7);
 
 
       }
@@ -254,8 +263,8 @@ handEvalResult handEval(int cardArr[], int l){
             _handEvalResult.win_cards[k + j] = pattern[2][k];
             k++;
         };
-        completeHandValue(handValue, pattern[3], 7);
-        completeHandValue(handValue, pattern[2], 7);
+        handValue = completeHandValue(handValue, pattern[3], 7);
+        handValue = completeHandValue(handValue, pattern[2], 7);
 
       }
     else if (good_length_of_array(pattern[0], 7) >= 5) { // straight
@@ -264,7 +273,7 @@ handEvalResult handEval(int cardArr[], int l){
         for (int j = 0; j < 7; j++){
             _handEvalResult.win_cards[j] = pattern[0][j];
         };
-        completeHandValue(handValue, pattern[0], 7);
+        handValue = completeHandValue(handValue, pattern[0], 7);
 
       }
     else if (good_length_of_array(pattern[3], 7) != 0) { // trip
@@ -282,8 +291,8 @@ handEvalResult handEval(int cardArr[], int l){
             k++;
         };
         */
-        completeHandValue(handValue, pattern[3], 7);
-        completeHandValue(handValue, pattern[1], 7);
+        handValue = completeHandValue(handValue, pattern[3], 7);
+        handValue = completeHandValue(handValue, pattern[1], 7);
 
       }
     else if (good_length_of_array(pattern[2], 7) > 2) { // two pairs
@@ -305,8 +314,8 @@ handEvalResult handEval(int cardArr[], int l){
             k++;
         };
         */
-        completeHandValue(handValue, pattern[2], 7);
-        completeHandValue(handValue, pattern[1], 7);
+        handValue = completeHandValue(handValue, pattern[2], 7);
+        handValue = completeHandValue(handValue, pattern[1], 7);
 
       }
     else if (good_length_of_array(pattern[2], 7) != 0) { // pair
@@ -328,8 +337,8 @@ handEvalResult handEval(int cardArr[], int l){
         };
         */
 
-        completeHandValue(handValue, pattern[2], 7);
-        completeHandValue(handValue, pattern[1], 7);
+        handValue = completeHandValue(handValue, pattern[2], 7);
+        handValue = completeHandValue(handValue, pattern[1], 7);
 
       }
     else { // high card
@@ -339,7 +348,7 @@ handEvalResult handEval(int cardArr[], int l){
             _handEvalResult.win_cards[j] = pattern[1][j];
         };
 
-        completeHandValue(handValue, pattern[1], 7);
+        handValue = completeHandValue(handValue, pattern[1], 7);
       }
 
     _handEvalResult.handType = handType;
@@ -372,7 +381,7 @@ partOfRandomHand makeRandomHand(
     generatedHand.count = cardCount;
     for (int j = 0; j < 5; j++)
         generatedHand.cards[j] = -1; 
-    bool exist = false;
+    int exist = 0;
     
     for (int i = 0; i < cardCount; i++){
         int generatedNumber = -1;
@@ -380,18 +389,18 @@ partOfRandomHand makeRandomHand(
         for(;;){
             generatedNumber = getRandomInt(0, 51);  
 
-            exist = false;         
+            exist = 0;         
             //банним карты уже на руках игроков
             if (l >0)
                     if (bannedArray[generatedNumber] != -1){
-                        exist = true;
+                        exist = 1;
                     }
             //банним, созданные ранее в цикле, карты
             if (i > 0)
                 for (int j = 0; j < i; j++)
                     if (generatedHand.cards[j] == generatedNumber)
-                        exist = true;         
-            if (exist == false)
+                        exist = 1;         
+            if (exist == 0)
                 break;
         };
         generatedHand.cards[i] = generatedNumber;       
@@ -400,22 +409,7 @@ partOfRandomHand makeRandomHand(
     return generatedHand;
 }
 
-/*
-    результат работы:
-    winOdds               -- вероятность выйгрыша против игроков
-    tieOdds               -- вероятность нечьих против игроков
-    winCount              -- количество побед
-    tieCount              -- количнство нечьих
-    globalCount           -- сколько всего итераций
 
-*/
-typedef struct resultGame{
-    float winOdds;
-    float tieOdds;
-    int winCount;
-    int tieCount;
-    int globalCount;
-} resultGame;
 
 /*
     симуляция методом Монте-Карло.
@@ -558,14 +552,7 @@ resultGame monteCarloSimulation(int cards[], int l, int ph, int playerCount, int
 }
 
 //-------------------------------------------------------------------------------------------------------
-/*
-    результат работы:
-    getOdds               -- вероятность получения конкретной комбинации (флаш, кольцо)
-    handType              -- сама комбинация
-*/
-typedef struct resultGetHand{
-    float   getOdds[9];
-} resultGetHand;
+
 
 resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration){
     resultGetHand _resultGetHand;
@@ -686,23 +673,7 @@ resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playe
 
 
 //-------------------------------------------------------------------------------------------------------
-/*
-    winnerData и findWinner
-    для опеределения победителя среди множества игроков
-*/
 
-typedef struct winnerData{
-    int number;                 //номер победителя
-    int handValue;              //значение его руки
-    int handType;
-    int _cards[7];              //карты, приведшие к победе
-    int _count;                 //их число (остальные: -1)
-} winnerData;
-
-typedef struct winners{
-    winnerData _winners[23];
-    int count;
-} winners;
 
 
 void swap(int *a, int *b)
@@ -857,115 +828,5 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
 }
 
 
-int is_royal_flush(int cards[], int l){
-    for(int i = 0; i < l; i++)
-        if (cards[i] == 48 || cards[i] == 49 || cards[i] == 50 || cards[i] == 51)
-            return 1;
-    return 0;
-}
-
 //----------------------------------------------------------------------------------------------------------
 
-
-int main(int argc, char *argv[])
-{  
-    //int cards[7] = {16, 17, 18, 1, 2, 15, 14} ;
-    int cards[7] = {1, 4, 24, 32, 5, 51, 2} ; //номера есть карты в картинке из корня проекта
-
-    srand(time(NULL));  
-
-    //monteCarloSimulation(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration)
-    resultGame rg = monteCarloSimulation(cards, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
-            7,                                  //7 штук
-            2,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
-            2,                                  //общее число игроков ( я + число оппонентов)
-            40000);                             //число итераций в монтекарло
-    
-    printf("winCount monte %i \n", rg.winCount);
-    printf("tieCount monte %i \n",rg.tieCount);
-    printf("win odds monte %f \n", rg.winOdds);
-    printf("tie odds monte %f \n",rg.tieOdds);
-    printf("lose odds monte %f \n", (1.0 - rg.tieOdds - rg.winOdds));
-    printf("cards generated monte %i \n", rg.globalCount);  
-    
-    
-    
-    
-    //выбор победителя 
-    int cards_judgement[][7] = {
-                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
-                                {1 , 4, 24, 32, 5, 51, 2},
-                                {10 , 4, 20, 32, 5, 50, 2},
-                                {1 , 4, 24, 32, 5, 51, 2},
-                                {1 , 2, 3, 4, 5, 51, 25},
-                          };
-    /*
-    winnerData _winnerData = findWinner(cards_judgement,
-            3,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
-    printf("\n\n judgement: \n");
-    printf("number of winner %i \n", _winnerData.number);
-    printf("handValue of winner %i \n", _winnerData.handValue);    
-    printf("handType of winner %i \n", _winnerData.handType);
-
-    for(int k =0; k < _winnerData._count; k++){
-        printf("win card: %i \n", _winnerData._cards[k]);
-    };
-    */
-
-    winners _winners = findWinner(cards_judgement,
-            4,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
-
-
-    for (int i = 0; i < _winners.count; i++){
-
-        if (_winners._winners[i].handType == 8){
-            if (is_royal_flush(cards_judgement[_winners._winners[i].number], 7) == 1)
-                printf("\n\n handType of winner: royal flash \n");
-        }
-        else printf("handType of winner %i \n", _winners._winners[i].handType);
-        printf("\n\n judgement: \n");
-        printf("number of winner %i \n", _winners._winners[i].number);
-        printf("handValue of winner %i \n", _winners._winners[i].handValue);
-        //printf("handType of winner %i \n", _winners._winners[i].handType);
-
-        for(int k =0; k < _winners._winners[i]._count; k++){
-            printf("win card: %i \n",_winners._winners[i]._cards[k]);
-        };
-    };
-
-    /*
-      тип руки:  handType
-      straight  flush           8
-      quad                      7
-      full house                6
-      flush                     5
-      straight (по возрастанию) 4
-      trip                      3
-      2 pairs                   2
-      pair                      1
-      high cards                0
-      */
-
-    int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
-    resultGetHand rgh = monteCarloSimulation_getHand(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
-                                                     7,                                  //7 штук
-                                                     1,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
-                                                     10,                                  //общее число игроков ( я + число оппонентов)
-                                                     40000                             //число итераций в монтекарло
-                                                     );
-    printf("\n\n chance to collect specific hand; can be not victorious: \n");
-    for (int i = 0; i < 9 ; i++)
-        printf("probabilty %f of %i \n", rgh.getOdds[i], i);
-
-
-
-
-
-    //int l = sizeof(cards) / sizeof(int); //размер массива
-    //h_e = handEval(cards, l);
-    //printf("%d\n",h_e);
-
-
-}
