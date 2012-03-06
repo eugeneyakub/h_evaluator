@@ -366,7 +366,7 @@ typedef struct partOfRandomHand{
 
 //должно генерировать от 0 до 51 (концы включительно)
 int getRandomInt(int min, int max){
-        return min + (rand() % (int)(max - min + 1));
+        return min + (random() % (int)(max - min + 1));
 }
 
 /*
