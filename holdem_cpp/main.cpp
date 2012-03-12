@@ -66,6 +66,7 @@ int completeHandValue(int& handValue, int cards[], int l){
                             // reaches the 21st position, we're done
       handValue |= 0x10;
     }
+    //printf("l %i \n", good_length_of_array(cards, l));
     /*
     while (handValue < 0x200000 && cards.length > 0) {
       handValue <<= 4;
@@ -96,6 +97,7 @@ typedef struct handEvalResult{
     int handValue;
     int handType;
     int win_cards[7];
+    int suite;
 } handEvalResult;
 
 /*
@@ -107,6 +109,7 @@ handEvalResult handEval(int cardArr[], int l){
     handEvalResult _handEvalResult;
     _handEvalResult.handValue = -1;
     _handEvalResult.handType = -1;
+    _handEvalResult.suite = -1;
     for(int j = 0; j < 7; j++)
         _handEvalResult.win_cards[j] = -1;
 
@@ -141,17 +144,20 @@ handEvalResult handEval(int cardArr[], int l){
       }
     }
     if (flushSuit >= 0) { // there is a flush
+        _handEvalResult.suite = flushSuit;
         //var run = [];
        // if this array ever reaches a length of 5,
                     // we have a Straight Flush!
-      int run[5] = {-1,-1,-1,-1,-1};
+      int run[7] = {-1,-1,-1,-1,-1, -1, -1};
       //если исчезнут все -1, то Straight Falsh
-      int ranksInFlushSuit[5] = {}; // this array collects the 5 highest
+      int ranksInFlushSuit[7] = {-1, -1, -1, -1, -1, -1, -1}; // this array collects the 5 highest
                                  // ranks in the suit, in case we have not
       int k = 0;
       for (rank = 12; rank >= 0; rank--) {
         if (!isPresent[rank * 4 + flushSuit]) {
           continue;
+        } else {
+            //printf("flush card %i \n", rank * 4 + flushSuit);
         }
         if (rank == run[good_length_of_array(run, l) - 1] - 1) {
             run[find_position_for_push(run, l)] = rank;
@@ -171,15 +177,17 @@ handEvalResult handEval(int cardArr[], int l){
       if (good_length_of_array(run, l)>= 5) {
         handValue = 8; // straight flush
         handType = 8;
-        for (int j = 0; j < l; j++){
+        for (int j = 0; j < 5; j++){
             _handEvalResult.win_cards[j] = run[j];
+            //printf("flush card %i \n", run[j]);
         };
         completeHandValue(handValue, run, l);
       } else {
         handValue = 5; // flush
         handType = 5;
-        for (int j = 0; j < l; j++){
+        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 5); j++){
             _handEvalResult.win_cards[j] = ranksInFlushSuit[j];
+            //printf("flush card %i \n", ranksInFlushSuit[j]);
         };
         completeHandValue(handValue, ranksInFlushSuit, l);
       }
@@ -779,6 +787,17 @@ int remove_minusOne (int arr[], int n){
     return n;
 }
 
+//вернёт номер элемента с ненужной мастью (для флашей)
+int remove_redundant(int arr[], int n, int suite){
+    //printf("suite!! %i \n",  suite);
+    for(int k = 0; k < n; k++)
+        if ((arr[k] & 3) != suite){
+            //printf("&!k: %i val: %i\n", k, arr[k] & 3);
+            return k;
+        }
+    return -1;
+}
+
 
 
 
@@ -803,14 +822,18 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
         winners_arr[i].handValue = hand_eval.handValue;
         winners_arr[i].handType = hand_eval.handType;
 
-
+        //printf("suite!! %i \n",  hand_eval.suite);
         int _cards[7] = {-1, -1, -1, -1, -1, -1, -1};
         int _count = 0;
 
         //получим ранги без -1 и повторений
         quick_sort( hand_eval.win_cards, 0, 7);
         int n = unique( hand_eval.win_cards, 7);
+        //printf("n!! %i \n", n);
         n = remove_minusOne(hand_eval.win_cards, n);
+        //printf("n!! %i \n", n);
+        //for(int p = 0; p < n; p++)
+        //    printf("pt!! %i \n", hand_eval.win_cards[p]);
         //найдем карты для рангов
         for(int k = 0; k < 7; k++){
             int card_rank = cards[winners_arr[i].number][k] >> 2;
@@ -820,6 +843,20 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
                     _count++;
                 };
         };
+        //printf("_count!! %i \n", _count);
+
+        /* для флашей */
+        if (hand_eval.suite != -1){
+            int r = remove_redundant(_cards, _count, hand_eval.suite);
+            //printf("r! %i \n", r);
+            for(int k =r; k < _count - 1; k++){
+                _cards[k] = _cards[k+1];
+            };
+            if (r != -1 ) _count--;
+        };
+
+        /* для флашей */
+
 
         for(int k =0; k < _count; k++){
             winners_arr[i]._cards[k] = _cards[k];
@@ -870,6 +907,7 @@ int is_royal_flush(int cards[], int l){
 int main(int argc, char *argv[])
 {  
     //int cards[7] = {16, 17, 18, 1, 2, 15, 14} ;
+
     int cards[7] = {1, 4, 24, 32, 5, 51, 2} ; //номера есть карты в картинке из корня проекта
 
     srand(time(NULL));  
@@ -888,16 +926,17 @@ int main(int argc, char *argv[])
     printf("lose odds monte %f \n", (1.0 - rg.tieOdds - rg.winOdds));
     printf("cards generated monte %i \n", rg.globalCount);  
     
-    
-    
+
+
     
     //выбор победителя 
     int cards_judgement[][7] = {
-                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                {1 , 13, 25, 33, 5, 51, 2},
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
-                                {1 , 4, 24, 32, 5, 51, 2},
-                                {1 , 2, 3, 4, 5, 51, 25},
+                                {1 , 4, 24, 32, 15, 51, 2},
+                                //{1 , 2, 3, 4, 5, 51, 25},
                           };
     /*
     winnerData _winnerData = findWinner(cards_judgement,
@@ -914,7 +953,7 @@ int main(int argc, char *argv[])
     */
 
     winners _winners = findWinner(cards_judgement,
-            4,                                                  //количество игроков (строки)
+            5,                                                  //количество игроков (строки)
             7);                                                 //количество карт
 
 
