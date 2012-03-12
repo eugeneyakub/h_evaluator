@@ -100,11 +100,13 @@ int completeHandValue(int  handValue, int cards[], int l){
     handValue       --  значение руки .
     handType        --  тип руки
     win_cards       --  содержит ранги карт, привёдших к победе
+    int suite;		-- масть (важна лишь для флашей)
   */
 typedef struct handEvalResult{
     int handValue;
     int handType;
     int win_cards[7];
+    int suite;
 } handEvalResult;
 
 /*
@@ -116,6 +118,7 @@ handEvalResult handEval(int cardArr[], int l){
     handEvalResult _handEvalResult;
     _handEvalResult.handValue = -1;
     _handEvalResult.handType = -1;
+    _handEvalResult.suite = -1;
     for(int j = 0; j < 7; j++)
         _handEvalResult.win_cards[j] = -1;
 
@@ -150,12 +153,13 @@ handEvalResult handEval(int cardArr[], int l){
       }
     }
     if (flushSuit >= 0) { // there is a flush
+      _handEvalResult.suite = flushSuit;
         //var run = [];
        // if this array ever reaches a length of 5,
                     // we have a Straight Flush!
-      int run[5] = {-1,-1,-1,-1,-1};
+      int run[7] = {-1,-1,-1,-1,-1, -1, -1};
       //если исчезнут все -1, то Straight Falsh
-      int ranksInFlushSuit[5] = {}; // this array collects the 5 highest
+      int ranksInFlushSuit[7] = {-1, -1, -1, -1, -1, -1, -1}; // this array collects the 5 highest
                                  // ranks in the suit, in case we have not
       int k = 0;
       for (rank = 12; rank >= 0; rank--) {
@@ -180,14 +184,14 @@ handEvalResult handEval(int cardArr[], int l){
       if (good_length_of_array(run, l)>= 5) {
         handValue = 8; // straight flush
         handType = 8;
-        for (int j = 0; j < l; j++){
+        for (int j = 0; j < 5; j++){
             _handEvalResult.win_cards[j] = run[j];
         };
         handValue = completeHandValue(handValue, run, l);
       } else {
         handValue = 5; // flush
         handType = 5;
-        for (int j = 0; j < l; j++){
+        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 5); j++){
             _handEvalResult.win_cards[j] = ranksInFlushSuit[j];
         };
         handValue = completeHandValue(handValue, ranksInFlushSuit, l);
@@ -751,6 +755,16 @@ int remove_minusOne (int arr[], int n){
 }
 
 
+//вернёт номер элемента с ненужной мастью (для флашей)
+int remove_redundant(int arr[], int n, int suite){
+    //printf("suite!! %i \n",  suite);
+    for(int k = 0; k < n; k++)
+        if ((arr[k] & 3) != suite){
+            //printf("&!k: %i val: %i\n", k, arr[k] & 3);
+            return k;
+        }
+    return -1;
+}
 
 
 //определяет победителя среди множества рук
@@ -791,6 +805,18 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
                     _count++;
                 };
         };
+
+        /* для флашей */
+        if (hand_eval.suite != -1){
+            int r = remove_redundant(_cards, _count, hand_eval.suite);
+            printf("r! %i \n", r);
+            for(int k =r; k < _count - 1; k++){
+                _cards[k] = _cards[k+1];
+            };
+            if (r != -1 ) _count--;
+        };
+
+        /* для флашей */
 
         for(int k =0; k < _count; k++){
             winners_arr[i]._cards[k] = _cards[k];

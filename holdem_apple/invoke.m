@@ -31,45 +31,18 @@ int main(int argc, char *argv[])
     
     //выбор победителя 
     int cards_judgement[][7] = {
-				//{25 , 29, 33, 37, 41, 45, 49},
+				{25 , 29, 33, 37, 41, 45, 49},
+				//{1 , 13, 25, 33, 5, 51, 2},
                                 {1 , 4, 19, 32, 24, 51, 2},     //Одна из рук для сравнения
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
                                 {1 , 4, 24, 32, 5, 51, 2},
-                                {1 , 2, 3, 4, 5, 51, 25},
+                                //{1 , 2, 3, 4, 5, 51, 25},
                           };
-    /*
-    winnerData _winnerData = findWinner(cards_judgement,
-            3,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
-    printf("\n\n judgement: \n");
-    printf("number of winner %i \n", _winnerData.number);
-    printf("handValue of winner %i \n", _winnerData.handValue);    
-    printf("handType of winner %i \n", _winnerData.handType);
 
-    for(int k =0; k < _winnerData._count; k++){
-        printf("win card: %i \n", _winnerData._cards[k]);
-    };
-    */
-  /*
+
     winners _winners = findWinner(cards_judgement,
             4,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
-
-    for (int i = 0; i < _winners.count; i++){
-        printf("\n\n judgement: \n");
-        printf("number of winner %i \n", _winners._winners[i].number);
-        printf("handValue of winner %i \n", _winners._winners[i].handValue);
-        printf("handType of winner %i \n", _winners._winners[i].handType);
-
-        for(int k =0; k < _winners._winners[i]._count; k++){
-            printf("win card: %i \n",_winners._winners[i]._cards[k]);
-        };
-    };
-*/
-
-    winners _winners = findWinner(cards_judgement,
-            5,                                                  //количество игроков (строки)
             7);                                                 //количество карт
 
 
