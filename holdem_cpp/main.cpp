@@ -848,11 +848,13 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
         /* для флашей */
         if (hand_eval.suite != -1){
             int r = remove_redundant(_cards, _count, hand_eval.suite);
-            //printf("r! %i \n", r);
+            printf("r! %i \n", r);
+            if (r != -1 ){
             for(int k =r; k < _count - 1; k++){
                 _cards[k] = _cards[k+1];
             };
-            if (r != -1 ) _count--;
+             _count--;
+            };
         };
 
         /* для флашей */
@@ -931,12 +933,14 @@ int main(int argc, char *argv[])
     
     //выбор победителя 
     int cards_judgement[][7] = {
-                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
-                                {1 , 13, 25, 33, 5, 51, 2},
+        //{0 , 4, 8, 12, 16, 20, 24},
+        //{0 , 4, 8, 12, 16, 28, 36},
+                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                //{1 , 13, 25, 33, 5, 51, 2},
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
                                 {1 , 4, 24, 32, 15, 51, 2},
-                                //{1 , 2, 3, 4, 5, 51, 25},
+                                {1 , 2, 3, 4, 5, 51, 25},
                           };
     /*
     winnerData _winnerData = findWinner(cards_judgement,
@@ -953,7 +957,7 @@ int main(int argc, char *argv[])
     */
 
     winners _winners = findWinner(cards_judgement,
-            5,                                                  //количество игроков (строки)
+            4,                                                  //количество игроков (строки)
             7);                                                 //количество карт
 
 
