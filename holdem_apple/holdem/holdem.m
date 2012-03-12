@@ -809,13 +809,15 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
         /* для флашей */
         if (hand_eval.suite != -1){
             int r = remove_redundant(_cards, _count, hand_eval.suite);
+	    while (r != -1 ){
             //printf("r! %i \n", r);
-            if (r != -1 ){
-            for(int k =r; k < _count - 1; k++){
-                _cards[k] = _cards[k+1];
-            };
-             _count--;
-            };
+
+	      for(int k =r; k < _count - 1; k++){
+		  _cards[k] = _cards[k+1];
+	      };
+	      _count--;
+	      r = remove_redundant(_cards, _count, hand_eval.suite);
+	    }
         };
 
         /* для флашей */

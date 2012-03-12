@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
 				//{1 , 13, 25, 33, 5, 51, 2},
 				{0 , 4, 8, 12, 16, 20, 24},
 				{0 , 4, 8, 12, 16, 28, 36},
-                                {1 , 4, 19, 32, 24, 51, 2},     //Одна из рук для сравнения
+                                //{1 , 4, 19, 32, 24, 51, 2},     //Одна из рук для сравнения
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
                                 {1 , 4, 24, 32, 5, 51, 2},
-                                //{1 , 2, 3, 4, 5, 51, 25},
+                                {1 , 2, 3, 4, 5, 51, 25},
                           };
 
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
             if (is_royal_flush(cards_judgement[_winners._winners[i].number], 7) == 1)
                 printf("\n\n handType of winner: royal flash \n");
         }
-        else printf("handType of winner %i \n", _winners._winners[i].handType);
+        printf("handType of winner %i \n", _winners._winners[i].handType);
         printf("number of winner %i \n", _winners._winners[i].number);
         printf("handValue of winner %i \n", _winners._winners[i].handValue);
         //printf("handType of winner %i \n", _winners._winners[i].handType);
