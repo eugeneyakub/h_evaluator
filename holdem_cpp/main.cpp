@@ -177,7 +177,7 @@ handEvalResult handEval(int cardArr[], int l){
       if (good_length_of_array(run, l)>= 5) {
         handValue = 8; // straight flush
         handType = 8;
-        for (int j = 0; j < 7; j++){
+        for (int j = 0; j < 5; j++){
             _handEvalResult.win_cards[j] = run[j];
             //printf("flush card %i \n", run[j]);
         };
@@ -185,7 +185,7 @@ handEvalResult handEval(int cardArr[], int l){
       } else {
         handValue = 5; // flush
         handType = 5;
-        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 7); j++){
+        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 5); j++){
             _handEvalResult.win_cards[j] = ranksInFlushSuit[j];
             //printf("flush card %i \n", ranksInFlushSuit[j]);
         };
@@ -736,6 +736,23 @@ void quick_sort(int arr[], int beg, int end)
   }
 }
 
+void quick_sort_by_rank(int arr[], int beg, int end)
+{
+  if (end > beg + 1)
+  {
+    int piv = arr[beg], l = beg + 1, r = end;
+    while (l < r)
+    {
+      if (arr[l] >> 2 >= piv >> 2)
+        l++;
+      else
+        swap(&arr[l], &arr[--r]);
+    }
+    swap(&arr[--l], &arr[beg]);
+    quick_sort_by_rank(arr, beg, l);
+    quick_sort_by_rank(arr, r, end);
+  }
+}
 
 
 void special_swap(winnerData *a, winnerData *b)
@@ -933,41 +950,36 @@ int main(int argc, char *argv[])
     
     //выбор победителя 
     int cards_judgement[][7] = {
-        //{0 , 4, 8, 12, 16, 20, 24},
-        //{0 , 4, 8, 12, 16, 28, 36},
-                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                {0 , 4, 8, 12, 16, 20, 24},
+                                {0 , 4, 8, 12, 16, 28, 36},
+                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
                                 //{1 , 13, 25, 33, 5, 51, 2},
-                                {0,4,8,12,16,36,40},
-                                {0,4,8,12,16,44,48},
+
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
+
+                                //{1 , 4, 24, 32, 5, 51, 2},
+                                {1 , 4, 3, 32, 5, 50, 2},
+
                                 {1 , 4, 24, 32, 15, 51, 2},
-                                {1 , 2, 3, 4, 5, 51, 25},
+                                //{1 , 2, 3, 4, 5, 51, 25},
                           };
-    /*
-    winnerData _winnerData = findWinner(cards_judgement,
-            3,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
-    printf("\n\n judgement: \n");
-    printf("number of winner %i \n", _winnerData.number);
-    printf("handValue of winner %i \n", _winnerData.handValue);    
-    printf("handType of winner %i \n", _winnerData.handType);
 
-    for(int k =0; k < _winnerData._count; k++){
-        printf("win card: %i \n", _winnerData._cards[k]);
-    };
-    */
 
+    int use_cards = 7;
     winners _winners = findWinner(cards_judgement,
-            2,                                                  //количество игроков (строки)
-            7);                                                 //количество карт
+
+            3,                                                  //количество игроков (строки)
+            use_cards);                                                 //количество карт
+
 
 
     for (int i = 0; i < _winners.count; i++){
 
         if (_winners._winners[i].handType == 8){
-            if (is_royal_flush(cards_judgement[_winners._winners[i].number], 7) == 1)
-                printf("\n\n handType of winner: royal flash \n");
+            if (is_royal_flush(_winners._winners[i]._cards, use_cards) == 1)
+                printf("\n\n handType of winner: royal flash \n"); else
+            printf("handType of winner %i \n", _winners._winners[i].handType);
         }
         else printf("handType of winner %i \n", _winners._winners[i].handType);
         printf("\n\n judgement: \n");
@@ -975,9 +987,52 @@ int main(int argc, char *argv[])
         printf("handValue of winner %i \n", _winners._winners[i].handValue);
         //printf("handType of winner %i \n", _winners._winners[i].handType);
 
-        for(int k =0; k < _winners._winners[i]._count; k++){
-            printf("win card: %i \n",_winners._winners[i]._cards[k]);
-        };
+        if (_winners._winners[i]._count >= 5)
+            for(int k =0; k < _winners._winners[i]._count; k++){
+                printf("win card!!: %i \n",_winners._winners[i]._cards[k]);
+            }
+        else {
+                    int _nead = 5 - _winners._winners[i]._count;
+                    //добавляем карты из руки наибольшие по рангу, чтобы было 5 штук
+
+                    int arr_nead[7] = {-1, -1, -1, -1, -1, -1, -1};
+                    int iter = 0;
+
+                    for(int h = 0; h < use_cards; h++){
+                        int not_in_winner_cards = 1;
+                        for(int k =0; k < _winners._winners[i]._count; k++){
+                            if (_winners._winners[i]._cards[k] == cards_judgement[_winners._winners[i].number][h])
+                                not_in_winner_cards = 0;
+                        };
+
+                        if (not_in_winner_cards == 1){
+                            arr_nead[iter] = cards_judgement[_winners._winners[i].number][h];
+                            iter++;
+                        }
+                    }
+
+                    //for(int l = 0; l < 7; l++){
+                    //    printf("before __: %i \n",arr_nead[l]);
+                    //}
+
+
+                    quick_sort_by_rank(arr_nead, 0, 7);
+                    //for(int l = 0; l < 7; l++){
+                    //    printf("after __: %i \n",arr_nead[l]);
+                    //}
+
+                    for(int k =0; k < _winners._winners[i]._count; k++){
+                        printf("win card: %i \n",_winners._winners[i]._cards[k]);
+                    }
+
+
+                    for(int l = 0; l < _nead; l++){
+                        printf("win card __: %i \n",arr_nead[l]);
+                    }
+
+            }
+
+
     };
 
     /*
