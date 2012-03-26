@@ -177,7 +177,7 @@ handEvalResult handEval(int cardArr[], int l){
       if (good_length_of_array(run, l)>= 5) {
         handValue = 8; // straight flush
         handType = 8;
-        for (int j = 0; j < 5; j++){
+        for (int j = 0; j < 7; j++){
             _handEvalResult.win_cards[j] = run[j];
             //printf("flush card %i \n", run[j]);
         };
@@ -185,7 +185,7 @@ handEvalResult handEval(int cardArr[], int l){
       } else {
         handValue = 5; // flush
         handType = 5;
-        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 5); j++){
+        for (int j = 0; j < good_length_of_array(ranksInFlushSuit, 7); j++){
             _handEvalResult.win_cards[j] = ranksInFlushSuit[j];
             //printf("flush card %i \n", ranksInFlushSuit[j]);
         };
@@ -937,6 +937,8 @@ int main(int argc, char *argv[])
         //{0 , 4, 8, 12, 16, 28, 36},
                                 //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
                                 //{1 , 13, 25, 33, 5, 51, 2},
+                                {0,4,8,12,16,36,40},
+                                {0,4,8,12,16,44,48},
                                 {1 , 4, 24, 32, 5, 51, 2},
                                 {10 , 4, 20, 32, 5, 50, 2},
                                 {1 , 4, 24, 32, 15, 51, 2},
@@ -957,7 +959,7 @@ int main(int argc, char *argv[])
     */
 
     winners _winners = findWinner(cards_judgement,
-            4,                                                  //количество игроков (строки)
+            2,                                                  //количество игроков (строки)
             7);                                                 //количество карт
 
 
