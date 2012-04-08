@@ -910,8 +910,19 @@ resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int ph, in
         _resultGetHand.getOdds[i] = 0;
 
     int oppCount = playerCount - 1;//число оппонентов
+
+    int p1[2] = {-1, -1};
     //рука игрока
-    int p1[2] = {cards[0], cards[1]};
+    if (r>=2){
+        p1[0] = cards[0];
+        p1[1] = cards[1];
+
+    }
+    else if (r==1){
+        p1[0] = cards[0];
+
+    }
+
     int alreadyBoardCount = 0;
     int boardCount = 0;
     //нет карт на столе (префлоп)
@@ -1000,7 +1011,7 @@ resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int ph, in
 
         }
 
-        if (r == 2){ //префлоп
+        if (r <= 2){ //префлоп
             board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
         }
         else if (r == 3){ //недофлоп
@@ -1025,7 +1036,7 @@ resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int ph, in
         for (int  j = 0; j < oppCount; j++){
             handEvalResult p2_eval;
 
-            if (r == 2){ //префлоп
+            if (r <= 2){ //префлоп
                 int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
                 p2_eval = handEval(arr, 7);
             }
@@ -1054,7 +1065,20 @@ resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int ph, in
 
 
 
+        partOfRandomHand p1_nead;
 
+        if (r == 0){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  2);
+            int arr[7] = {p1_nead.cards[0], p1_nead.cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        if (r == 1){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  1);
+            int arr[7] = {p1[0], p1_nead.cards[0], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
         if (r == 2){ //префлоп
 
             int arr[7] = {p1[0], p1[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
@@ -1542,7 +1566,7 @@ int main(int argc, char *argv[])
                                                           2,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
                                                           2,                                  //общее число игроков ( я + число оппонентов)
                                                           40000,
-                                                           7                                       //число итераций в монтекарло
+                                                           7                                      //число итераций в монтекарло
                                                           );
     printf("accumulated version: ");
     for (int i = 0; i < 10 ; i++)
