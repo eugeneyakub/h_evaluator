@@ -704,6 +704,24 @@ void quick_sort(int arr[], int beg, int end)
 }
 
 
+void quick_sort_by_rank(int arr[], int beg, int end)
+{
+  if (end > beg + 1)
+  {
+    int piv = arr[beg], l = beg + 1, r = end;
+    while (l < r)
+    {
+      if (arr[l] >> 2 >= piv >> 2)
+        l++;
+      else
+        swap(&arr[l], &arr[--r]);
+    }
+    swap(&arr[--l], &arr[beg]);
+    quick_sort_by_rank(arr, beg, l);
+    quick_sort_by_rank(arr, r, end);
+  }
+}
+
 
 void special_swap(winnerData *a, winnerData *b)
 {
