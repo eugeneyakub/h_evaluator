@@ -781,8 +781,22 @@ resultAccumulated monteCarloSimulation_enchanced(int cards[], int l, int ph, int
         int v = 0; //число побед против оппонентов
         int e = 0; //число нечейных
 
-        int p2_evals[oppCount];
+        partOfRandomHand p2_evals[oppCount];
 
+
+
+        for (int  j = 0; j < oppCount; j++){
+              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
+              //банним их
+              if (p2.count > 0)
+              for (int k = 0; k < p2.count; k++){
+                  bannedArray[p2.cards[k]]++;
+
+                }
+              p2_evals[j] = p2;
+
+
+        }
 
         if (ph == 0){ //префлоп
             board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
@@ -799,37 +813,31 @@ resultAccumulated monteCarloSimulation_enchanced(int cards[], int l, int ph, int
             for (int j = 0; j < board.count; j++)
                   bannedArray[board.cards[j]]++;
 
+        int p2_evals_values[oppCount];
         for (int  j = 0; j < oppCount; j++){
-              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
-              //банним их
-              if (p2.count > 0)
-              for (int k = 0; k < p2.count; k++){
-                  bannedArray[p2.cards[k]]++;
+            handEvalResult p2_eval;
 
-                }
-
-              handEvalResult p2_eval;
-
-              if (ph == 0){ //префлоп
-                  int arr[7] = {p2.cards[0], p2.cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
-                  p2_eval = handEval(arr, 7);
-              }
-              else if (ph == 1){ //флоп
-                  int arr[7] = {p2.cards[0], p2.cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
-                  p2_eval = handEval(arr, 7);
-              }
-              else if (ph == 2){ //тёрн
-                  int arr[7] = {p2.cards[0], p2.cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
-                  p2_eval = handEval(arr, 7);
-              }
-              else if (ph == 3){ //ривер
-                  int arr[7] = {p2.cards[0], p2.cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
-                  p2_eval = handEval(arr, 7);
-              }
-
-              p2_evals[j] = p2_eval.handValue;
-
+            if (ph == 0){ //префлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 1){ //флоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 2){ //тёрн
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 3){ //ривер
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            p2_evals_values[j] = p2_eval.handValue;
         }
+
+
+
 
         if (ph == 0){ //префлоп
 
@@ -861,9 +869,9 @@ resultAccumulated monteCarloSimulation_enchanced(int cards[], int l, int ph, int
 
         for (int  j = 0; j < oppCount; j++){
 
-            if (p1_eval.handValue > p2_evals[j]){
+            if (p1_eval.handValue > p2_evals_values[j]){
                   v++; }
-              else if (p1_eval.handValue ==  p2_evals[j]){
+              else if (p1_eval.handValue ==  p2_evals_values[j]){
                   e++; }
         }
         if (v == oppCount)
