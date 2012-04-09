@@ -3,7 +3,18 @@
 #import "./holdem/holdem.h"
 #import <time.h>
 
-
+void  someCallbackHoldem(resultAccumulated ra2, int iter)
+{
+    printf("accumulated version: ");
+    for (int i = 0; i < 10 ; i++)
+        printf("probabilty %f of %i \n", ra2._resultGetHand.getOdds[i], i);
+    printf("winCount monte %i \n", ra2._resultGame.winCount);
+    printf("tieCount monte %i \n",ra2._resultGame.tieCount);
+    printf("win odds monte %f \n", ra2._resultGame.winOdds);
+    printf("tie odds monte %f \n",ra2._resultGame.tieOdds);
+    printf("lose odds monte %f \n", (1.0 - ra2._resultGame.tieOdds - ra2._resultGame.winOdds));
+    printf("cards generated monte %i \n", ra2._resultGame.globalCount);
+};
 
 int main(int argc, char *argv[])
 {  
@@ -147,6 +158,33 @@ int main(int argc, char *argv[])
     //int h_e = handEval(cards, l);
     //printf("%d\n",h_e);
 
+
+    /*
+      0-7 карт.
+      При:
+      5 - флоп
+      2 - префлоп
+      6 - тёрн
+      7  - ривер
+     */
+
+
+    resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards2, 7,                                  //7 штукмаксимум
+
+                                                          2,                                  //общее число игроков ( я + число оппонентов)
+                                                          40000,                            //число итераций в монтекарло
+                                                           5,   someCallbackHoldem);                               //карт известно 0-7
+
+                                                         
+    printf("accumulated version: ");
+    for (int i = 0; i < 10 ; i++)
+        printf("probabilty %f of %i \n", ra2._resultGetHand.getOdds[i], i);
+    printf("winCount monte %i \n", ra2._resultGame.winCount);
+    printf("tieCount monte %i \n",ra2._resultGame.tieCount);
+    printf("win odds monte %f \n", ra2._resultGame.winOdds);
+    printf("tie odds monte %f \n",ra2._resultGame.tieOdds);
+    printf("lose odds monte %f \n", (1.0 - ra2._resultGame.tieOdds - ra2._resultGame.winOdds));
+    printf("cards generated monte %i \n", ra2._resultGame.globalCount);
 
 }
 

@@ -25,6 +25,18 @@ int good_length_of_array(int arr[], int l){
             count++;
     return count;
 }
+
+bool is_containing_ace(int arr[], int l){
+    //int l = sizeof(arr) / sizeof(int);
+    int contain = 0;
+    for (int i = 0; i < l; i++)
+        if (arr[i] == 12){
+            contain = 1;
+            break;
+        };
+    return contain;
+}
+
 //положение в массиве после которого начинаются -1
 int find_position_for_push(int arr[], int l){
     //int l = sizeof(arr) / sizeof(int);
@@ -175,8 +187,11 @@ handEvalResult handEval(int cardArr[], int l){
         run[4] = 0xc; // push an ace
       }
       if (good_length_of_array(run, l)>= 5) {
-        handValue = 8; // straight flush
-        handType = 8;
+        handValue = 8;
+        if (is_containing_ace(run, l) == 1)
+            handType = 9;// royal flush
+        else
+            handType = 8;// straight flush
         for (int j = 0; j < 5; j++){
             _handEvalResult.win_cards[j] = run[j];
             //printf("flush card %i \n", run[j]);
@@ -572,12 +587,12 @@ resultGame monteCarloSimulation(int cards[], int l, int ph, int playerCount, int
     handType              -- сама комбинация
 */
 typedef struct resultGetHand{
-    float   getOdds[9];
+    float   getOdds[10];
 } resultGetHand;
 
 resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration){
     resultGetHand _resultGetHand;
-    for (int i = 0; i < 9 ; i++)
+    for (int i = 0; i < 10 ; i++)
         _resultGetHand.getOdds[i] = 0;
 
     int oppCount = playerCount - 1;//число оппонентов
@@ -684,14 +699,462 @@ resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playe
 
     //printf("global %i \n", globalCount);
 
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 10; i++)
         _resultGetHand.getOdds[i] /= (1.0 * globalCount);
 
 
     return _resultGetHand;
 }
+//------------------------------------------------------------------------------------------------------
 
 
+typedef struct resultAccumulated{
+    resultGetHand   _resultGetHand;
+    resultGame _resultGame;
+} resultAccumulated;
+
+resultAccumulated monteCarloSimulation_enchanced(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration){
+    resultGetHand _resultGetHand;
+    for (int i = 0; i < 10 ; i++)
+        _resultGetHand.getOdds[i] = 0;
+
+    int oppCount = playerCount - 1;//число оппонентов
+    //рука игрока
+    int p1[2] = {cards[0], cards[1]};
+    int alreadyBoardCount = 0;
+    int boardCount = 0;
+    //нет карт на столе (префлоп)
+    int alreadyboard[5] = {-1, -1, -1, -1, -1};
+
+    if (ph == 0){//префлоп
+      alreadyBoardCount = 0; //число карт на столе (известны)
+      boardCount = 5;        //число карт, которые будем генерировать случайным образом
+    }
+    else if (ph == 1){//флоп
+      alreadyBoardCount = 3;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      boardCount = 2;
+    }
+    else if (ph == 2){//тёрн
+      alreadyBoardCount = 4;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      boardCount = 1;
+    }
+    else if (ph == 3){//ривер
+      alreadyBoardCount = 5;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      alreadyboard[4] = cards[6];
+      boardCount = 0;
+    }
+    int globalCount = 0;
+    int winCount = 0;
+    int tieCount = 0;
+    int loseCount = 0;
+
+    for(int i = 0; i < monteCarloMaxIteration; i++ ){
+        //если изменим на отличное от -1, то карта уже сгенерирована, значит банним её
+        int bannedArray[52] = {};
+        for (int j = 0; j < 52; j++)
+            bannedArray[j] = -1;
+        //банним руку игрока
+        bannedArray[cards[0]]++;
+        bannedArray[cards[1]]++;
+        //банним карты уже на столе (флоп/тёрн/ривер)
+        if (alreadyBoardCount != 0)
+            for (int j = 0; j < alreadyBoardCount; j++)
+                bannedArray[alreadyboard[j]]++;
+        handEvalResult p1_eval;
+        //int p1_eval = -1; //качество руки игрока (7 карт: 2 его + 3-5 стол + 2-0 сгенерированных)
+        partOfRandomHand board;
+        board.count = -1;
+
+
+        //генерим рандомно карты противников без забанненых
+        int v = 0; //число побед против оппонентов
+        int e = 0; //число нечейных
+
+        partOfRandomHand p2_evals[oppCount];
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
+              //банним их
+              if (p2.count > 0)
+              for (int k = 0; k < p2.count; k++){
+                  bannedArray[p2.cards[k]]++;
+
+                }
+              p2_evals[j] = p2;
+
+
+        }
+
+        if (ph == 0){ //префлоп
+            board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
+        }
+        else if (ph == 1){ //флоп
+            board = makeRandomHand(bannedArray, 52,  2);
+        }
+        else if (ph == 2){ //тёрн
+            board = makeRandomHand(bannedArray, 52,  1);
+        }
+
+        //банним карты, сгенерированные рандомно на столе
+        if (board.count > 0)
+            for (int j = 0; j < board.count; j++)
+                  bannedArray[board.cards[j]]++;
+
+        int p2_evals_values[oppCount];
+        for (int  j = 0; j < oppCount; j++){
+            handEvalResult p2_eval;
+
+            if (ph == 0){ //префлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 1){ //флоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 2){ //тёрн
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+                p2_eval = handEval(arr, 7);
+            }
+            else if (ph == 3){ //ривер
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            p2_evals_values[j] = p2_eval.handValue;
+        }
+
+
+
+
+        if (ph == 0){ //префлоп
+
+            int arr[7] = {p1[0], p1[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 1){ //флоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 2){ //тёрн
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (ph == 3){ //ривер
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+
+        _resultGetHand.getOdds[p1_eval.handType]++;
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+
+            if (p1_eval.handValue > p2_evals_values[j]){
+                  v++; }
+              else if (p1_eval.handValue ==  p2_evals_values[j]){
+                  e++; }
+        }
+        if (v == oppCount)
+          winCount++;
+        if (e == oppCount)
+          tieCount++;
+        globalCount++;
+    };
+
+    float winOdds = winCount * 1.0 / globalCount ;
+    float tieOdds = tieCount * 1.0 / globalCount;
+    resultGame _resultGame;
+    _resultGame.winOdds = winOdds;
+    _resultGame.tieOdds = tieOdds;
+    _resultGame.winCount = winCount;
+    _resultGame.tieCount = tieCount;
+    _resultGame.globalCount = globalCount;
+
+
+
+
+    //printf("global %i \n", globalCount);
+
+    for (int i = 0; i < 10; i++)
+        _resultGetHand.getOdds[i] /= (1.0 * globalCount);
+
+    resultAccumulated _resultAccumulated;
+    _resultAccumulated._resultGame = _resultGame;
+    _resultAccumulated._resultGetHand = _resultGetHand;
+    return _resultAccumulated;
+}
+//-------------------------------------------------------------------------------------------------------
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r){
+    resultGetHand _resultGetHand;
+    for (int i = 0; i < 10 ; i++)
+        _resultGetHand.getOdds[i] = 0;
+
+    int oppCount = playerCount - 1;//число оппонентов
+
+    int p1[2] = {-1, -1};
+    //рука игрока
+    if (r>=2){
+        p1[0] = cards[0];
+        p1[1] = cards[1];
+
+    }
+    else if (r==1){
+        p1[0] = cards[0];
+
+    }
+
+    int alreadyBoardCount = 0;
+    int boardCount = 0;
+    //нет карт на столе (префлоп)
+    int alreadyboard[5] = {-1, -1, -1, -1, -1};
+
+    if (r == 2){//префлоп
+      alreadyBoardCount = 0; //число карт на столе (известны)
+      boardCount = 5;        //число карт, которые будем генерировать случайным образом
+    }
+    else if (r == 3){//недофлоп
+      alreadyBoardCount = 1;
+      alreadyboard[0] = cards[2];
+      boardCount = 4;
+    }
+    else if (r == 4){//недофлоп
+      alreadyBoardCount = 2;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      boardCount = 3;
+    }
+    else if (r == 5){//флоп
+      alreadyBoardCount = 3;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      boardCount = 2;
+    }
+    else if (r == 6){//тёрн
+      alreadyBoardCount = 4;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      boardCount = 1;
+    }
+    else if (r == 7){//ривер
+      alreadyBoardCount = 5;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      alreadyboard[4] = cards[6];
+      boardCount = 0;
+    }
+    int globalCount = 0;
+    int winCount = 0;
+    int tieCount = 0;
+    int loseCount = 0;
+
+    for(int i = 0; i < monteCarloMaxIteration; i++ ){
+        //если изменим на отличное от -1, то карта уже сгенерирована, значит банним её
+        int bannedArray[52] = {};
+        for (int j = 0; j < 52; j++)
+            bannedArray[j] = -1;
+        //банним руку игрока
+        bannedArray[cards[0]]++;
+        bannedArray[cards[1]]++;
+        //банним карты уже на столе (флоп/тёрн/ривер)
+        if (alreadyBoardCount != 0)
+            for (int j = 0; j < alreadyBoardCount; j++)
+                bannedArray[alreadyboard[j]]++;
+        handEvalResult p1_eval;
+        //int p1_eval = -1; //качество руки игрока (7 карт: 2 его + 3-5 стол + 2-0 сгенерированных)
+        partOfRandomHand board;
+        board.count = -1;
+
+
+        //генерим рандомно карты противников без забанненых
+        int v = 0; //число побед против оппонентов
+        int e = 0; //число нечейных
+
+        partOfRandomHand p2_evals[oppCount];
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
+              //банним их
+              if (p2.count > 0)
+              for (int k = 0; k < p2.count; k++){
+                  bannedArray[p2.cards[k]]++;
+
+                }
+              p2_evals[j] = p2;
+
+
+        }
+
+        if (r <= 2){ //префлоп
+            board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
+        }
+        else if (r == 3){ //недофлоп
+            board = makeRandomHand(bannedArray, 52,  4);
+        }
+        else if (r == 4){ //недофлоп
+            board = makeRandomHand(bannedArray, 52,  3);
+        }
+        else if (r == 5){ //флоп
+            board = makeRandomHand(bannedArray, 52,  2);
+        }
+        else if (r == 6){ //тёрн
+            board = makeRandomHand(bannedArray, 52,  1);
+        }
+
+        //банним карты, сгенерированные рандомно на столе
+        if (board.count > 0)
+            for (int j = 0; j < board.count; j++)
+                  bannedArray[board.cards[j]]++;
+
+        int p2_evals_values[oppCount];
+        for (int  j = 0; j < oppCount; j++){
+            handEvalResult p2_eval;
+
+            if (r <= 2){ //префлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            if (r == 3){ //недофлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], alreadyboard[0] };
+                p2_eval = handEval(arr, 7);
+            }
+            if (r == 4){ //недофлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], alreadyboard[0], alreadyboard[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 5){ //флоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 6){ //тёрн
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 7){ //ривер
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            p2_evals_values[j] = p2_eval.handValue;
+        }
+
+
+
+        partOfRandomHand p1_nead;
+
+        if (r == 0){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  2);
+            int arr[7] = {p1_nead.cards[0], p1_nead.cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        if (r == 1){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  1);
+            int arr[7] = {p1[0], p1_nead.cards[0], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        if (r == 2){ //префлоп
+
+            int arr[7] = {p1[0], p1[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 3){ //недофлоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], board.cards[2], board.cards[3], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 4){ //недофлоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], board.cards[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 5){ //флоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 6){ //тёрн
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 7){ //ривер
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+
+        _resultGetHand.getOdds[p1_eval.handType]++;
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+
+            if (p1_eval.handValue > p2_evals_values[j]){
+                  v++; }
+              else if (p1_eval.handValue ==  p2_evals_values[j]){
+                  e++; }
+        }
+        if (v == oppCount)
+          winCount++;
+        if (e == oppCount)
+          tieCount++;
+        globalCount++;
+    };
+
+    float winOdds = winCount * 1.0 / globalCount ;
+    float tieOdds = tieCount * 1.0 / globalCount;
+    resultGame _resultGame;
+    _resultGame.winOdds = winOdds;
+    _resultGame.tieOdds = tieOdds;
+    _resultGame.winCount = winCount;
+    _resultGame.tieCount = tieCount;
+    _resultGame.globalCount = globalCount;
+
+
+
+
+    //printf("global %i \n", globalCount);
+
+    for (int i = 0; i < 10; i++)
+        _resultGetHand.getOdds[i] /= (1.0 * globalCount);
+
+    resultAccumulated _resultAccumulated;
+    _resultAccumulated._resultGame = _resultGame;
+    _resultAccumulated._resultGetHand = _resultGetHand;
+    return _resultAccumulated;
+}
 
 //-------------------------------------------------------------------------------------------------------
 /*
@@ -947,6 +1410,14 @@ int main(int argc, char *argv[])
     
 
 
+
+
+
+
+
+
+
+
     
     //выбор победителя 
     int cards_judgement[][7] = {
@@ -976,12 +1447,12 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < _winners.count; i++){
 
-        if (_winners._winners[i].handType == 8){
-            if (is_royal_flush(_winners._winners[i]._cards, use_cards) == 1)
-                printf("\n\n handType of winner: royal flash \n"); else
-            printf("handType of winner %i \n", _winners._winners[i].handType);
-        }
-        else printf("handType of winner %i \n", _winners._winners[i].handType);
+        //if (_winners._winners[i].handType == 8){
+        //    if (is_royal_flush(_winners._winners[i]._cards, use_cards) == 1)
+        //        printf("\n\n handType of winner: royal flash \n"); else
+        printf("handType of winner %i \n", _winners._winners[i].handType);
+       // }
+       // else printf("handType of winner %i \n", _winners._winners[i].handType);
         printf("\n\n judgement: \n");
         printf("number of winner %i \n", _winners._winners[i].number);
         printf("handValue of winner %i \n", _winners._winners[i].handValue);
@@ -1037,6 +1508,7 @@ int main(int argc, char *argv[])
 
     /*
       тип руки:  handType
+      royal  flush              9
       straight  flush           8
       quad                      7
       full house                6
@@ -1048,15 +1520,16 @@ int main(int argc, char *argv[])
       high cards                0
       */
 
-    int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
+    //int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
+    int cards2[7] = {1, 4, 24, 32, 5, 51, 2} ;
     resultGetHand rgh = monteCarloSimulation_getHand(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
                                                      7,                                  //7 штук
                                                      1,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
-                                                     10,                                  //общее число игроков ( я + число оппонентов)
+                                                     2,                                  //общее число игроков ( я + число оппонентов)
                                                      40000                             //число итераций в монтекарло
                                                      );
     printf("\n\n chance to collect specific hand; can be not victorious: \n");
-    for (int i = 0; i < 9 ; i++)
+    for (int i = 0; i < 10 ; i++)
         printf("probabilty %f of %i \n", rgh.getOdds[i], i);
 
 
@@ -1068,4 +1541,51 @@ int main(int argc, char *argv[])
     //printf("%d\n",h_e);
 
 
+
+
+
+/*
+    resultAccumulated ra = monteCarloSimulation_enchanced(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
+                                                          7,                                  //7 штук
+                                                          3,                                  //фаза. 0-префлоп, 1 - флоп, 2 - тёрн, 3 -ривер
+                                                          2,                                  //общее число игроков ( я + число оппонентов)
+                                                          40000                             //число итераций в монтекарло
+                                                          );
+    printf("accumulated version: ");
+    for (int i = 0; i < 10 ; i++)
+        printf("probabilty %f of %i \n", ra._resultGetHand.getOdds[i], i);
+    printf("winCount monte %i \n", ra._resultGame.winCount);
+    printf("tieCount monte %i \n",ra._resultGame.tieCount);
+    printf("win odds monte %f \n", ra._resultGame.winOdds);
+    printf("tie odds monte %f \n",ra._resultGame.tieOdds);
+    printf("lose odds monte %f \n", (1.0 - ra._resultGame.tieOdds - ra._resultGame.winOdds));
+    printf("cards generated monte %i \n", ra._resultGame.globalCount);
+*/
+
+
+    /*
+      0-7 карт.
+      При:
+      5 - флоп
+      2 - префлоп
+      6 - тёрн
+      7  - ривер
+      */
+
+
+    resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards2, 7,                                  //7 штукмаксимум
+
+                                                          2,                                  //общее число игроков ( я + число оппонентов)
+                                                          40000,                            //число итераций в монтекарло
+                                                           7                                      //карт известно 0-7
+                                                          );
+    printf("accumulated version: ");
+    for (int i = 0; i < 10 ; i++)
+        printf("probabilty %f of %i \n", ra2._resultGetHand.getOdds[i], i);
+    printf("winCount monte %i \n", ra2._resultGame.winCount);
+    printf("tieCount monte %i \n",ra2._resultGame.tieCount);
+    printf("win odds monte %f \n", ra2._resultGame.winOdds);
+    printf("tie odds monte %f \n",ra2._resultGame.tieOdds);
+    printf("lose odds monte %f \n", (1.0 - ra2._resultGame.tieOdds - ra2._resultGame.winOdds));
+    printf("cards generated monte %i \n", ra2._resultGame.globalCount);
 }

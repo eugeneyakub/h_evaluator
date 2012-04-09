@@ -74,7 +74,7 @@ typedef struct winners{		//набор победителей (при сравн�
                           };
 	int playerCount = 5 (5 cтрок)
 	int cardCount   = 7 (сколько первых карт учитывать в строке; зависит от фазы (от 5 -префлоп до 7 - ривер)
-    /*
+    
  
  */
 winners findWinner(int cards[][7],
@@ -103,9 +103,18 @@ int is_royal_flush(int cards[], int l);   //определяет являетс�
       high cards                0
       */
 typedef struct resultGetHand{
-    float   getOdds[9];		//каждые элемент содержит вероятность собрать определённый тип руки (тип руки - индекс элемента массива)
+    float   getOdds[10];		//каждые элемент содержит вероятность собрать определённый тип руки (тип руки - индекс элемента массива)
 } resultGetHand;
 //вх параметры имеют тот же смысл, что и  для 'monteCarloSimulation'
 resultGetHand monteCarloSimulation_getHand(int cards[], int l, int ph, int playerCount, int monteCarloMaxIteration);
+
+typedef struct resultAccumulated{
+    resultGetHand   _resultGetHand;
+    resultGame _resultGame;
+} resultAccumulated;
+
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated, int));
+
+void  someCallbackHoldem(resultAccumulated ra2, int iter);
 
 #endif

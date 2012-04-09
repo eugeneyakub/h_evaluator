@@ -34,6 +34,17 @@ int good_length_of_array(int arr[], int l){
             count++;
     return count;
 }
+
+int is_containing_ace(int arr[], int l){
+    //int l = sizeof(arr) / sizeof(int);
+    int contain = 0;
+    for (int i = 0; i < l; i++)
+        if (arr[i] == 12){
+            contain = 1;
+            break;
+        };
+    return contain;
+}
 //положение в массиве после которого начинаются -1
 int find_position_for_push(int arr[], int l){
     //int l = sizeof(arr) / sizeof(int);
@@ -882,5 +893,281 @@ int is_royal_flush(int cards[], int l){
     return 0;
 }
 
-//----------------------------------------------------------------------------------------------------------
 
+
+
+//----------------------------------------------------------------------------------------------------------
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated, int)){
+    resultGetHand _resultGetHand;
+    for (int i = 0; i < 10 ; i++)
+        _resultGetHand.getOdds[i] = 0;
+
+    int oppCount = playerCount - 1;//число оппонентов
+
+    int p1[2] = {-1, -1};
+    //рука игрока
+    if (r>=2){
+        p1[0] = cards[0];
+        p1[1] = cards[1];
+
+    }
+    else if (r==1){
+        p1[0] = cards[0];
+
+    }
+
+    int alreadyBoardCount = 0;
+    int boardCount = 0;
+    //нет карт на столе (префлоп)
+    int alreadyboard[5] = {-1, -1, -1, -1, -1};
+
+    if (r == 2){//префлоп
+      alreadyBoardCount = 0; //число карт на столе (известны)
+      boardCount = 5;        //число карт, которые будем генерировать случайным образом
+    }
+    else if (r == 3){//недофлоп
+      alreadyBoardCount = 1;
+      alreadyboard[0] = cards[2];
+      boardCount = 4;
+    }
+    else if (r == 4){//недофлоп
+      alreadyBoardCount = 2;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      boardCount = 3;
+    }
+    else if (r == 5){//флоп
+      alreadyBoardCount = 3;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      boardCount = 2;
+    }
+    else if (r == 6){//тёрн
+      alreadyBoardCount = 4;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      boardCount = 1;
+    }
+    else if (r == 7){//ривер
+      alreadyBoardCount = 5;
+      alreadyboard[0] = cards[2];
+      alreadyboard[1] = cards[3];
+      alreadyboard[2] = cards[4];
+      alreadyboard[3] = cards[5];
+      alreadyboard[4] = cards[6];
+      boardCount = 0;
+    }
+    int globalCount = 0;
+    int winCount = 0;
+    int tieCount = 0;
+    int loseCount = 0;
+
+    for(int i = 0; i < monteCarloMaxIteration; i++ ){
+        //если изменим на отличное от -1, то карта уже сгенерирована, значит банним её
+        int bannedArray[52] = {};
+        for (int j = 0; j < 52; j++)
+            bannedArray[j] = -1;
+        //банним руку игрока
+        bannedArray[cards[0]]++;
+        bannedArray[cards[1]]++;
+        //банним карты уже на столе (флоп/тёрн/ривер)
+        if (alreadyBoardCount != 0)
+            for (int j = 0; j < alreadyBoardCount; j++)
+                bannedArray[alreadyboard[j]]++;
+        handEvalResult p1_eval;
+        //int p1_eval = -1; //качество руки игрока (7 карт: 2 его + 3-5 стол + 2-0 сгенерированных)
+        partOfRandomHand board;
+        board.count = -1;
+
+
+        //генерим рандомно карты противников без забанненых
+        int v = 0; //число побед против оппонентов
+        int e = 0; //число нечейных
+
+        partOfRandomHand p2_evals[oppCount];
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+              partOfRandomHand p2 = makeRandomHand(bannedArray, 52, 2); //две карты противника из префлопа
+              //банним их
+              if (p2.count > 0)
+              for (int k = 0; k < p2.count; k++){
+                  bannedArray[p2.cards[k]]++;
+
+                }
+              p2_evals[j] = p2;
+
+
+        }
+
+        if (r <= 2){ //префлоп
+            board = makeRandomHand(bannedArray, 52,  5); //5 карт на столе неизвестны
+        }
+        else if (r == 3){ //недофлоп
+            board = makeRandomHand(bannedArray, 52,  4);
+        }
+        else if (r == 4){ //недофлоп
+            board = makeRandomHand(bannedArray, 52,  3);
+        }
+        else if (r == 5){ //флоп
+            board = makeRandomHand(bannedArray, 52,  2);
+        }
+        else if (r == 6){ //тёрн
+            board = makeRandomHand(bannedArray, 52,  1);
+        }
+
+        //банним карты, сгенерированные рандомно на столе
+        if (board.count > 0)
+            for (int j = 0; j < board.count; j++)
+                  bannedArray[board.cards[j]]++;
+
+        int p2_evals_values[oppCount];
+        for (int  j = 0; j < oppCount; j++){
+            handEvalResult p2_eval;
+
+            if (r <= 2){ //префлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            if (r == 3){ //недофлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], alreadyboard[0] };
+                p2_eval = handEval(arr, 7);
+            }
+            if (r == 4){ //недофлоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], board.cards[0], board.cards[1], board.cards[2], alreadyboard[0], alreadyboard[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 5){ //флоп
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 6){ //тёрн
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+                p2_eval = handEval(arr, 7);
+            }
+            else if (r == 7){ //ривер
+                int arr[7] = {p2_evals[j].cards[0], p2_evals[j].cards[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+                p2_eval = handEval(arr, 7);
+            }
+            p2_evals_values[j] = p2_eval.handValue;
+        }
+
+
+
+        partOfRandomHand p1_nead;
+
+        if (r == 0){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  2);
+            int arr[7] = {p1_nead.cards[0], p1_nead.cards[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        if (r == 1){ //недопрефлоп
+            p1_nead = makeRandomHand(bannedArray, 52,  1);
+            int arr[7] = {p1[0], p1_nead.cards[0], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        if (r == 2){ //префлоп
+
+            int arr[7] = {p1[0], p1[1], board.cards[0], board.cards[1], board.cards[2], board.cards[3], board.cards[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 3){ //недофлоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], board.cards[2], board.cards[3], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 4){ //недофлоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], board.cards[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 5){ //флоп
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], board.cards[0], board.cards[1] };
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 6){ //тёрн
+
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], board.cards[0]};
+            p1_eval = handEval(arr, 7);
+
+        }
+        else if (r == 7){ //ривер
+            int arr[7] = {p1[0], p1[1], alreadyboard[0], alreadyboard[1], alreadyboard[2], alreadyboard[3], alreadyboard[4] };
+            p1_eval = handEval(arr, 7);
+
+        }
+
+        _resultGetHand.getOdds[p1_eval.handType]++;
+
+
+
+        for (int  j = 0; j < oppCount; j++){
+
+            if (p1_eval.handValue > p2_evals_values[j]){
+                  v++; }
+              else if (p1_eval.handValue ==  p2_evals_values[j]){
+                  e++; }
+        }
+        if (v == oppCount)
+          winCount++;
+        if (e == oppCount)
+          tieCount++;
+        globalCount++;
+
+	if (globalCount % 10000 == 0){
+	  float winOdds = winCount * 1.0 / globalCount ;
+	  float tieOdds = tieCount * 1.0 / globalCount;
+	  resultGame p_resultGame;
+	  p_resultGame.winOdds = winOdds;
+	  p_resultGame.tieOdds = tieOdds;
+	  p_resultGame.winCount = winCount;
+	  p_resultGame.tieCount = tieCount;
+	  p_resultGame.globalCount = globalCount;
+	  
+	  resultGetHand p_resultGetHand;
+	  for (int i=0; i < 10 ; i++)
+	      p_resultGetHand.getOdds[i] = _resultGetHand.getOdds[i];
+
+	  for (int i = 0; i < 10; i++)
+	      p_resultGetHand.getOdds[i] /= (1.0 * globalCount);
+
+	  resultAccumulated partialAccumulated;
+	  partialAccumulated._resultGame = p_resultGame;
+	  partialAccumulated._resultGetHand = p_resultGetHand;
+	  callbackHoldem(partialAccumulated, globalCount);
+	};
+    };
+
+    float winOdds = winCount * 1.0 / globalCount ;
+    float tieOdds = tieCount * 1.0 / globalCount;
+    resultGame _resultGame;
+    _resultGame.winOdds = winOdds;
+    _resultGame.tieOdds = tieOdds;
+    _resultGame.winCount = winCount;
+    _resultGame.tieCount = tieCount;
+    _resultGame.globalCount = globalCount;
+
+
+
+
+    //printf("global %i \n", globalCount);
+
+    for (int i = 0; i < 10; i++)
+        _resultGetHand.getOdds[i] /= (1.0 * globalCount);
+
+    resultAccumulated _resultAccumulated;
+    _resultAccumulated._resultGame = _resultGame;
+    _resultAccumulated._resultGetHand = _resultGetHand;
+    return _resultAccumulated;
+}
