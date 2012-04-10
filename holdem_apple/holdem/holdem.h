@@ -113,8 +113,8 @@ typedef struct resultAccumulated{
     resultGame _resultGame;
 } resultAccumulated;
 
-resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated, int));
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated));
 
-void  someCallbackHoldem(resultAccumulated ra2, int iter);
+void  someCallbackHoldem(resultAccumulated ra2);
 
 #endif

@@ -26,7 +26,7 @@ int good_length_of_array(int arr[], int l){
     return count;
 }
 
-bool is_containing_ace(int arr[], int l){
+int is_containing_ace(int arr[], int l){
     //int l = sizeof(arr) / sizeof(int);
     int contain = 0;
     for (int i = 0; i < l; i++)

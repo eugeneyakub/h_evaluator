@@ -3,7 +3,7 @@
 #import "./holdem/holdem.h"
 #import <time.h>
 
-void  someCallbackHoldem(resultAccumulated ra2, int iter)
+void  someCallbackHoldem(resultAccumulated ra2)
 {
     printf("accumulated version: ");
     for (int i = 0; i < 10 ; i++)

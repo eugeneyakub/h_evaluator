@@ -897,7 +897,7 @@ int is_royal_flush(int cards[], int l){
 
 
 //----------------------------------------------------------------------------------------------------------
-resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated, int)){
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated)){
     resultGetHand _resultGetHand;
     for (int i = 0; i < 10 ; i++)
         _resultGetHand.getOdds[i] = 0;
@@ -1145,7 +1145,7 @@ resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int player
 	  resultAccumulated partialAccumulated;
 	  partialAccumulated._resultGame = p_resultGame;
 	  partialAccumulated._resultGetHand = p_resultGetHand;
-	  callbackHoldem(partialAccumulated, globalCount);
+	  callbackHoldem(partialAccumulated);
 	};
     };
 

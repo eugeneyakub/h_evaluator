@@ -113,19 +113,8 @@ typedef struct resultAccumulated{
     resultGame _resultGame;
 } resultAccumulated;
 
-resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated, int));
+resultAccumulated monteCarloSimulation_enchanced2(int cards[], int l, int playerCount, int monteCarloMaxIteration, int r, void (*callbackHoldem)(resultAccumulated));
 
-void  someCallbackHoldem(resultAccumulated ra2, int iter)
-{
-    printf("accumulated version: ");
-    for (int i = 0; i < 10 ; i++)
-        printf("probabilty %f of %i \n", ra2._resultGetHand.getOdds[i], i);
-    printf("winCount monte %i \n", ra2._resultGame.winCount);
-    printf("tieCount monte %i \n",ra2._resultGame.tieCount);
-    printf("win odds monte %f \n", ra2._resultGame.winOdds);
-    printf("tie odds monte %f \n",ra2._resultGame.tieOdds);
-    printf("lose odds monte %f \n", (1.0 - ra2._resultGame.tieOdds - ra2._resultGame.winOdds));
-    printf("cards generated monte %i \n", ra2._resultGame.globalCount);
-};
+void  someCallbackHoldem(resultAccumulated ra2);
 
 #endif
