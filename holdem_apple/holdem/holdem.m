@@ -194,7 +194,10 @@ handEvalResult handEval(int cardArr[], int l){
       }
       if (good_length_of_array(run, l)>= 5) {
         handValue = 8; // straight flush
-        handType = 8;
+        if (is_containing_ace(run, l) == 1)
+            handType = 9;// royal flush
+        else
+            handType = 8;// straight flush
         for (int j = 0; j < 5; j++){
             _handEvalResult.win_cards[j] = run[j];
         };

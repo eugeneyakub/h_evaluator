@@ -1572,12 +1572,12 @@ int main(int argc, char *argv[])
       7  - ривер
       */
 
-
-    resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards2, 7,                                  //7 штукмаксимум
+    int cards3[7] = {48, 44, 40, 36, 32, 11, 2};
+    resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards3, 7,                                  //7 штукмаксимум
 
                                                           2,                                  //общее число игроков ( я + число оппонентов)
                                                           40000,                            //число итераций в монтекарло
-                                                           7                                      //карт известно 0-7
+                                                           5                                      //карт известно 0-7
                                                           );
     printf("accumulated version: ");
     for (int i = 0; i < 10 ; i++)
