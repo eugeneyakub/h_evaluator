@@ -238,6 +238,7 @@ handEvalResult handEval(int cardArr[], int l){
 
       for (int i = 1; i <= rankCount; i++) {
           pattern[rankCount][find_position_for_push(pattern[rankCount], l)] = rank;
+          printf("rankCount %i rank %i \n", rankCount, rank);
       }
     }
     // check for "wheel": straight 5432A
@@ -270,11 +271,13 @@ handEvalResult handEval(int cardArr[], int l){
         int j = 0;
         while (pattern[3][j] != -1){
             _handEvalResult.win_cards[j] = pattern[3][j];
+            printf("pattern3!! %i \n", _handEvalResult.win_cards[j]);
             j++;
         };
         int k = 0;
         while (pattern[2][k] != -1){
             _handEvalResult.win_cards[k + j] = pattern[2][k];
+            printf("pattern2!! %i \n", _handEvalResult.win_cards[k + j]);
             k++;
         };
         completeHandValue(handValue, pattern[3], 7);
@@ -364,6 +367,10 @@ handEvalResult handEval(int cardArr[], int l){
 
         completeHandValue(handValue, pattern[1], 7);
       }
+
+    for(int j = 5; j <7; j++)
+        _handEvalResult.win_cards[j] = -1;
+
 
     _handEvalResult.handType = handType;
     _handEvalResult.handValue = handValue;
@@ -1243,7 +1250,7 @@ void special_quick_sort(winnerData arr[], int beg, int end)
 }
 
 
-int unique(int *a, int n)
+int unique(int a[], int n)
 {
     int i, k;
 
@@ -1296,36 +1303,47 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
             winners_arr[i]._cards[j] = -1;
 
     };
-
+    printf("ddddd \n");
     for(int i = 0; i < playerCount; i++){
         handEvalResult hand_eval = handEval(cards[i], cardCount);
         winners_arr[i].handValue = hand_eval.handValue;
         winners_arr[i].handType = hand_eval.handType;
+        for(int p = 0; p < 7; p++)
+            printf("winc %i \n",hand_eval.win_cards[p]);
+        printf("ht %i \n", hand_eval.handType);
 
-        //printf("suite!! %i \n",  hand_eval.suite);
+        printf("suite!! %i \n",  hand_eval.suite);
         int _cards[7] = {-1, -1, -1, -1, -1, -1, -1};
         int _count = 0;
-
+        /*
         //получим ранги без -1 и повторений
         quick_sort( hand_eval.win_cards, 0, 7);
+        for(int p = 0; p < 7; p++)
+            printf("winc1.5 %i \n",hand_eval.win_cards[p]);
+
         int n = unique( hand_eval.win_cards, 7);
         //printf("n!! %i \n", n);
+        for(int p = 0; p < 7; p++)
+            printf("winc2 %i \n",hand_eval.win_cards[p]);
         n = remove_minusOne(hand_eval.win_cards, n);
         //printf("n!! %i \n", n);
-        //for(int p = 0; p < n; p++)
-        //    printf("pt!! %i \n", hand_eval.win_cards[p]);
+        for(int p = 0; p < 7; p++)
+            printf("winc3 %i \n",hand_eval.win_cards[p]);
+        for(int p = 0; p < n; p++)
+            printf("pt!! %i \n", hand_eval.win_cards[p]);
+
         //найдем карты для рангов
         for(int k = 0; k < 7; k++){
             int card_rank = cards[winners_arr[i].number][k] >> 2;
-            for(int j = 0; j < n; j++)
+            for(int j = 0; j < 5; j++)
                 if (card_rank ==  hand_eval.win_cards[j]){
                     _cards[_count] = cards[winners_arr[i].number][k];
                     _count++;
                 };
         };
-        //printf("_count!! %i \n", _count);
+        printf("_count!! %i \n", _count);
 
-        /* для флашей */
+        // для флашей
         if (hand_eval.suite != -1){
             int r = remove_redundant(_cards, _count, hand_eval.suite);
             printf("r! %i \n", r);
@@ -1337,16 +1355,46 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
             };
         };
 
-        /* для флашей */
+        // для флашей
+
+
+        */
+
+        //найдем число карт победителей - количество не "-1" в  hand_eval.win_cards
+        _count = 0;
+
+        int c_count = 0;
+
+        for(int p = 0; p < 5; p++)
+            if (hand_eval.win_cards[p] != -1)
+                _count++;
+            int rankArr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+            for(int p = 0; p < _count; p++)
+                rankArr[hand_eval.win_cards[p]]++;
+
+        printf("count!! %i \n", _count);
+
+        //найдем карты для рангов
+        for(int k = 0; k < 7; k++){
+            int card_rank = cards[winners_arr[i].number][k] >> 2;
+            if (rankArr[card_rank] >0 ){
+                rankArr[card_rank]--;
+                _cards[c_count] =  cards[winners_arr[i].number][k];
+                c_count++;
+            }
+        };
 
 
         for(int k =0; k < _count; k++){
             winners_arr[i]._cards[k] = _cards[k];
-            //printf("wincards!! %i \n", _cards[k]);
+            printf("wincards!! %i \n", _cards[k]);
         };
         winners_arr[i]._count = _count;
     };
 
+
+    //сортируем по убыванию и ищем первые с разынми значениями  handValue
     special_quick_sort(winners_arr, 0, playerCount);
 
     //printf("handValue 0 %i\n", winners_arr[0].handValue);
@@ -1389,7 +1437,7 @@ int is_royal_flush(int cards[], int l){
 int main(int argc, char *argv[])
 {  
     //int cards[7] = {16, 17, 18, 1, 2, 15, 14} ;
-
+    /*
     int cards[7] = {1, 4, 24, 32, 5, 51, 2} ; //номера есть карты в картинке из корня проекта
 
     srand(time(NULL));  
@@ -1410,7 +1458,7 @@ int main(int argc, char *argv[])
     
 
 
-
+*/
 
 
 
@@ -1421,19 +1469,22 @@ int main(int argc, char *argv[])
     
     //выбор победителя 
     int cards_judgement[][7] = {
-                                //{0 , 4, 8, 12, 16, 20, 24},
-                                //{0 , 4, 8, 12, 16, 28, 36},
-                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                //{0 , 4, 8, 14, 16, 20, 24},         //flush
+                                //{0 , 4, 8, 12, 16, 28, 36},         //straight flush
+                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
                                 //{1 , 13, 25, 33, 5, 51, 2},
 
-                                {1 , 4, 24, 32, 11, 51, 2},
+                                //{1 , 4, 24, 32, 11, 51, 2},
                                 //{10 , 4, 20, 32, 5, 50, 2},
 
                                 //{1 , 4, 24, 32, 5, 51, 2},
                                 //{1 , 4, 23, 32, 51, 50, 2},
-
-                                {1 , 4, 24, 32, 15, 51, 2},
+                                {1 , 0, 4, 5, 33, 43, 21},
+                                        {1 , 0, 4, 5, 33, 44, 21},
+                                //{1 , 4, 24, 32, 15, 51, 2},
                                 //{1 , 2, 3, 4, 5, 51, 25},
+                                {1 , 5, 2, 6, 3, 7, 51},
+        {1 , 5, 2, 6, 3, 43, 47},
                           };
 
 
@@ -1482,15 +1533,15 @@ int main(int argc, char *argv[])
                         }
                     }
 
-                    //for(int l = 0; l < 7; l++){
-                    //    printf("before __: %i \n",arr_nead[l]);
-                    //}
+                    for(int l = 0; l < 7; l++){
+                        printf("before __: %i \n",arr_nead[l]);
+                    }
 
 
                     quick_sort_by_rank(arr_nead, 0, 7);
-                    //for(int l = 0; l < 7; l++){
-                    //    printf("after __: %i \n",arr_nead[l]);
-                    //}
+                    for(int l = 0; l < 7; l++){
+                        printf("after __: %i \n",arr_nead[l]);
+                    }
 
                     for(int k =0; k < _winners._winners[i]._count; k++){
                         printf("win card: %i \n",_winners._winners[i]._cards[k]);
@@ -1520,6 +1571,7 @@ int main(int argc, char *argv[])
       high cards                0
       */
 
+    /*
     //int cards2[7] = {2, 3, 10, 14, 22, 51, 32} ;
     int cards2[7] = {1, 4, 24, 32, 5, 51, 2} ;
     resultGetHand rgh = monteCarloSimulation_getHand(cards2, //карты 7 штук (если префлоп, то реальном нужны лишь первые 2, флоп : 5, тёрн : 6, ривер : 7)
@@ -1534,7 +1586,7 @@ int main(int argc, char *argv[])
 
 
 
-
+*/
 
     //int l = sizeof(cards) / sizeof(int); //размер массива
     //h_e = handEval(cards, l);
@@ -1572,6 +1624,7 @@ int main(int argc, char *argv[])
       7  - ривер
       */
 
+    /*
     int cards3[7] = {48, 44, 40, 36, 32, 11, 2};
     resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards3, 7,                                  //7 штукмаксимум
 
@@ -1588,4 +1641,5 @@ int main(int argc, char *argv[])
     printf("tie odds monte %f \n",ra2._resultGame.tieOdds);
     printf("lose odds monte %f \n", (1.0 - ra2._resultGame.tieOdds - ra2._resultGame.winOdds));
     printf("cards generated monte %i \n", ra2._resultGame.globalCount);
+    */
 }

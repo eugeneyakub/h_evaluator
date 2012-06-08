@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
       7  - ривер
      */
 
-    int cards3[7] = {48, 44, 40, 36, 32, 11, 2};
+    int cards3[7] = {48, 44, 40, 36, 28, 11, 2};
     resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards3, 7,                                  //7 штукмаксимум
 
                                                           2,                                  //общее число игроков ( я + число оппонентов)
