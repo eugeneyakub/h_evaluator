@@ -1385,12 +1385,56 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
             }
         };
 
+        if (c_count < 5){
+            int _nead = 5 - c_count;
+            //добавляем карты из руки наибольшие по рангу, чтобы было 5 штук
 
-        for(int k =0; k < _count; k++){
+            int arr_nead[7] = {-1, -1, -1, -1, -1, -1, -1};
+            int iter = 0;
+            int use_cards = 7;
+
+            for(int h = 0; h < use_cards; h++){
+                int not_in_winner_cards = 1;
+                for(int k =0; k < c_count; k++){
+                    if (_cards[k] == cards[i][h])
+                        not_in_winner_cards = 0;
+                };
+
+                if (not_in_winner_cards == 1){
+                    arr_nead[iter] = cards[i][h];
+                    iter++;
+                }
+            }
+            /*
+            for(int l = 0; l < 7; l++){
+                printf("before __2: %i \n",arr_nead[l]);
+            }*/
+
+
+            quick_sort_by_rank(arr_nead, 0, 7);
+            /*
+            for(int l = 0; l < 7; l++){
+                printf("after __2: %i \n",arr_nead[l]);
+            }
+
+            for(int k =0; k < 5; k++){
+                printf("win card2: %i \n",_cards[k]);
+            }*/
+
+
+            for(int l = 0; l < _nead; l++){
+                _cards[c_count] = arr_nead[l];
+                c_count++;
+            }
+
+        };
+
+
+        for(int k =0; k < 5; k++){
             winners_arr[i]._cards[k] = _cards[k];
             printf("wincards!! %i \n", _cards[k]);
         };
-        winners_arr[i]._count = _count;
+        winners_arr[i]._count = c_count;
     };
 
 
@@ -1470,8 +1514,8 @@ int main(int argc, char *argv[])
     //выбор победителя 
     int cards_judgement[][7] = {
                                 //{0 , 4, 8, 14, 16, 20, 24},         //flush
-                                //{0 , 4, 8, 12, 16, 28, 36},         //straight flush
-                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
+                                {0 , 4, 8, 12, 16, 28, 36},         //straight flush
+                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
                                 //{1 , 13, 25, 33, 5, 51, 2},
 
                                 //{1 , 4, 24, 32, 11, 51, 2},
@@ -1509,10 +1553,12 @@ int main(int argc, char *argv[])
         printf("handValue of winner %i \n", _winners._winners[i].handValue);
         //printf("handType of winner %i \n", _winners._winners[i].handType);
 
-        if (_winners._winners[i]._count >= 5)
+        //if (_winners._winners[i]._count >= 5)
             for(int k =0; k < _winners._winners[i]._count; k++){
                 printf("win card!!: %i \n",_winners._winners[i]._cards[k]);
+
             }
+            /*
         else {
                     int _nead = 5 - _winners._winners[i]._count;
                     //добавляем карты из руки наибольшие по рангу, чтобы было 5 штук
@@ -1552,7 +1598,7 @@ int main(int argc, char *argv[])
                         printf("win card __: %i \n",arr_nead[l]);
                     }
 
-            }
+            }*/
 
 
     };
