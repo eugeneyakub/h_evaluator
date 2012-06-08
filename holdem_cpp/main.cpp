@@ -1368,17 +1368,20 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
         for(int p = 0; p < 5; p++)
             if (hand_eval.win_cards[p] != -1)
                 _count++;
-            int rankArr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            int rankArr[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0};
 
             for(int p = 0; p < _count; p++)
                 rankArr[hand_eval.win_cards[p]]++;
 
         printf("count!! %i \n", _count);
 
+        for(int k = 0; k <= 12; k++)
+            printf("aaaaaa!! %i \n", rankArr[k]);
         //найдем карты для рангов
         for(int k = 0; k < 7; k++){
             int card_rank = cards[winners_arr[i].number][k] >> 2;
             if (rankArr[card_rank] >0 ){
+                printf("card rank!! %i \n", card_rank);
                 rankArr[card_rank]--;
                 _cards[c_count] =  cards[winners_arr[i].number][k];
                 c_count++;
@@ -1425,11 +1428,12 @@ winners findWinner(int cards[][7], int playerCount, int cardCount){
             for(int l = 0; l < _nead; l++){
                 _cards[c_count] = arr_nead[l];
                 c_count++;
+                printf("count: %i \n",c_count);
             }
 
         };
 
-
+printf("count: %i \n",c_count);
         for(int k =0; k < 5; k++){
             winners_arr[i]._cards[k] = _cards[k];
             printf("wincards!! %i \n", _cards[k]);
@@ -1514,8 +1518,8 @@ int main(int argc, char *argv[])
     //выбор победителя 
     int cards_judgement[][7] = {
                                 //{0 , 4, 8, 14, 16, 20, 24},         //flush
-                                {0 , 4, 8, 12, 16, 28, 36},         //straight flush
-                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
+                                //{0 , 4, 8, 12, 16, 28, 36},         //straight flush
+                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
                                 //{1 , 13, 25, 33, 5, 51, 2},
 
                                 //{1 , 4, 24, 32, 11, 51, 2},
@@ -1523,8 +1527,8 @@ int main(int argc, char *argv[])
 
                                 //{1 , 4, 24, 32, 5, 51, 2},
                                 //{1 , 4, 23, 32, 51, 50, 2},
-                                {1 , 0, 4, 5, 33, 43, 21},
-                                        {1 , 0, 4, 5, 33, 44, 21},
+                                //{1 , 0, 4, 5, 33, 43, 21},
+                                  //      {1 , 0, 4, 5, 33, 44, 21},
                                 //{1 , 4, 24, 32, 15, 51, 2},
                                 //{1 , 2, 3, 4, 5, 51, 25},
                                 {1 , 5, 2, 6, 3, 7, 51},

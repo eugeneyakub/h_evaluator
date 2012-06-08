@@ -40,21 +40,23 @@ int main(int argc, char *argv[])
     
     
     
-    //выбор победителя 
     int cards_judgement[][7] = {
-                                {0 , 4, 8, 12, 16, 24, 28},
-                                {0 , 4, 8, 12, 16, 28, 36},
-                                {25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения
+                                //{0 , 4, 8, 14, 16, 20, 24},         //flush
+                               // {0 , 4, 8, 12, 16, 28, 36},         //straight flush
+                                //{25 , 29, 33, 37, 41, 45, 49},     //Одна из рук для сравнения  royal flush
                                 //{1 , 13, 25, 33, 5, 51, 2},
 
-                                {1 , 4, 24, 32, 11, 51, 2},
+                              //  {1 , 4, 24, 32, 11, 51, 2},
                                 //{10 , 4, 20, 32, 5, 50, 2},
 
                                 //{1 , 4, 24, 32, 5, 51, 2},
                                 //{1 , 4, 23, 32, 51, 50, 2},
-
-                                {1 , 4, 24, 32, 15, 51, 2},
+                               // {1 , 0, 4, 5, 33, 43, 21},
+                           //             {1 , 0, 4, 5, 33, 44, 21},
+                                //{1 , 4, 24, 32, 15, 51, 2},
                                 //{1 , 2, 3, 4, 5, 51, 25},
+                                {1 , 5, 2, 6, 3, 7, 51},
+        {1 , 5, 2, 6, 3, 43, 47},
                           };
 
 
@@ -65,66 +67,24 @@ int main(int argc, char *argv[])
             use_cards);                                                //количество карт
 
 
+    
     for (int i = 0; i < _winners.count; i++){
 
-        if (_winners._winners[i].handType == 8){
-            if (is_royal_flush(_winners._winners[i]._cards, use_cards) == 1)
-                printf("\n\n handType of winner: royal flash \n"); else
-            printf("handType of winner %i \n", _winners._winners[i].handType);
-        }
-        else printf("handType of winner %i \n", _winners._winners[i].handType);
+        printf("handType of winner %i \n", _winners._winners[i].handType);
+
         printf("\n\n judgement: \n");
         printf("number of winner %i \n", _winners._winners[i].number);
         printf("handValue of winner %i \n", _winners._winners[i].handValue);
-        //printf("handType of winner %i \n", _winners._winners[i].handType);
 
-        if (_winners._winners[i]._count >= 5)
+
             for(int k =0; k < _winners._winners[i]._count; k++){
                 printf("win card!!: %i \n",_winners._winners[i]._cards[k]);
-            }
-        else {
-                    int _nead = 5 - _winners._winners[i]._count;
-                    //добавляем карты из руки наибольшие по рангу, чтобы было 5 штук
-
-                    int arr_nead[7] = {-1, -1, -1, -1, -1, -1, -1};
-                    int iter = 0;
-
-                    for(int h = 0; h < use_cards; h++){
-                        int not_in_winner_cards = 1;
-                        for(int k =0; k < _winners._winners[i]._count; k++){
-                            if (_winners._winners[i]._cards[k] == cards_judgement[_winners._winners[i].number][h])
-                                not_in_winner_cards = 0;
-                        };
-
-                        if (not_in_winner_cards == 1){
-                            arr_nead[iter] = cards_judgement[_winners._winners[i].number][h];
-                            iter++;
-                        }
-                    }
-
-                    //for(int l = 0; l < 7; l++){
-                    //    printf("before __: %i \n",arr_nead[l]);
-                    //}
-
-
-                    quick_sort_by_rank(arr_nead, 0, 7);
-                    //for(int l = 0; l < 7; l++){
-                    //    printf("after __: %i \n",arr_nead[l]);
-                    //}
-
-                    for(int k =0; k < _winners._winners[i]._count; k++){
-                        printf("win card: %i \n",_winners._winners[i]._cards[k]);
-                    }
-
-
-                    for(int l = 0; l < _nead; l++){
-                        printf("win card __: %i \n",arr_nead[l]);
-                    }
 
             }
-
+   
 
     };
+
 
     /*
       тип руки:  handType
@@ -168,7 +128,7 @@ int main(int argc, char *argv[])
       7  - ривер
      */
 
-    int cards3[7] = {48, 44, 40, 36, 32, 11, 2};
+    int cards3[7] = {48, 44, 40, 36, 28, 11, 2};
     resultAccumulated ra2 = monteCarloSimulation_enchanced2(cards3, 7,                                  //7 штукмаксимум
 
                                                           2,                                  //общее число игроков ( я + число оппонентов)
